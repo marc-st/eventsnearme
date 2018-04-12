@@ -29,9 +29,9 @@ public class EventViewFragment extends Fragment {
         fragments = new ArrayList<>();
 
         // add each of the three fragments to the adapter
+        fragments.add(new EventViewSignUpFragment());
         fragments.add(new EventViewDiscussionFragment());
         fragments.add(new EventViewAttendingFragment());
-        fragments.add(new EventViewSignUpFragment());
     }
 
     @Override
@@ -52,6 +52,7 @@ public class EventViewFragment extends Fragment {
         };
 
         ViewPager viewPager = view.findViewById(R.id.eventViewPager);
+        viewPager.setOffscreenPageLimit(2);
         viewPager.setAdapter(fragmentPagerAdapter);
 
         return view;
@@ -68,7 +69,7 @@ public class EventViewFragment extends Fragment {
     }
 
     public void setSignedUp() {
-        ((EventViewSignUpFragment)fragments.get(2)).setSignedUp();
+        ((EventViewSignUpFragment)fragments.get(0)).setSignedUp();
     }
 
 }

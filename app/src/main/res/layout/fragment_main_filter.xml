@@ -10,13 +10,13 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_margin="10px"
-        android:text="Sort by Distance" />
+        android:text="@string/sort_distance" />
 
     <Button
         android:id="@+id/MainFilterStart"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_margin="10px"
-        android:text="Sort by Start Time" />
+        android:text="@string/sort_start" />
 
 </LinearLayout>

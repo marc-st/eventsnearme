@@ -8,24 +8,18 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:id="@+id/eventListName"
-        android:layout_weight=".25"
+        android:layout_weight=".33"
         android:textSize="20sp" />
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:id="@+id/eventListStartTime"
-        android:layout_weight=".25"
-        android:textSize="20sp"/>
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:id="@+id/eventListEndTime"
-        android:layout_weight=".25"
-        android:textSize="20sp"/>
+        android:id="@+id/eventListTime"
+        android:layout_weight=".33"
+        android:textSize="20sp" />
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:id="@+id/eventListLocation"
-        android:layout_weight=".25"
-        android:textSize="20sp"/>
+        android:layout_weight=".33"
+        android:textSize="20sp" />
 </LinearLayout>

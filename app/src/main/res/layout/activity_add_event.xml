@@ -17,7 +17,8 @@
         android:id="@+id/addEventNameEntry"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:hint="Enter an event name"/>
+        android:inputType="text"
+        android:hint="@string/enter_event_name"/>
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -30,7 +31,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Enter start time:"/>
+                android:text="@string/enter_start"/>
 
             <DatePicker
                 android:id="@+id/addEventStartDate"
@@ -53,7 +54,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Enter end time:"/>
+                android:text="@string/enter_end"/>
 
             <DatePicker
                 android:id="@+id/addEventEndDate"
@@ -74,6 +75,6 @@
         android:id="@+id/addEventConfirm"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Confirm"/>
+        android:text="@string/confirm"/>
 
 </LinearLayout>

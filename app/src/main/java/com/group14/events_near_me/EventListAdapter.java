@@ -57,18 +57,30 @@ public class EventListAdapter extends ArrayAdapter<String> {
         ((TextView)row.findViewById(R.id.eventListName)).setText(e.name);
 
         // convert the times from milliseconds into a human readable form
-        SimpleDateFormat sdf = new SimpleDateFormat("dd MMM ''YY", Locale.UK);
+        SimpleDateFormat sdf = new SimpleDateFormat("h:mm d/M/yy", Locale.UK);
 
-        // set the start time
-        Calendar calendar = Calendar.getInstance();
-        calendar.setTimeInMillis(e.startTime);
-        String s = sdf.format(calendar.getTime());
-        ((TextView)row.findViewById(R.id.eventListStartTime)).setText(s);
+        Calendar start = Calendar.getInstance();
+        start.setTimeInMillis(e.startTime);
+        Calendar end = Calendar.getInstance();
+        end.setTimeInMillis(e.endTime);
 
-        // set the end time
-        calendar.setTimeInMillis(e.endTime);
-        s = sdf.format(calendar.getTime());
-        ((TextView)row.findViewById(R.id.eventListEndTime)).setText(s);
+        StringBuilder sb = new StringBuilder();
+        // if the start and end is on the same day, condense the time display
+        if (start.get(Calendar.YEAR) == end.get(Calendar.YEAR) &&
+                start.get(Calendar.MONTH) == end.get(Calendar.MONTH) &&
+                start.get(Calendar.DAY_OF_MONTH) == end.get(Calendar.DAY_OF_MONTH)) {
+            // display the start time of day only
+            SimpleDateFormat sdfTimeOnly = new SimpleDateFormat("h:mm-", Locale.UK);
+            sb.append(sdfTimeOnly.format(start.getTime()));
+            // display full date for the end only
+            sb.append(sdf.format(end.getTime()));
+        } else {
+            // display full date for both start and end
+            sb.append(sdf.format(start.getTime()));
+            sb.append(" to ");
+            sb.append(sdf.format(end.getTime()));
+        }
+        ((TextView)row.findViewById(R.id.eventListTime)).setText(sb.toString());
 
         // reverse geo lookup location from latitude and longitude coordinates
         Geocoder geo = new Geocoder(context);
@@ -76,7 +88,8 @@ public class EventListAdapter extends ArrayAdapter<String> {
             List<Address> matches = geo.getFromLocation(e.lat, e.lng, 1);
             Address address = (matches.isEmpty() ? null : matches.get(0));
             ((TextView)row.findViewById(R.id.eventListLocation)).setText(address.getLocality());
-        } catch (IOException e1) {
+        } catch (IOException | NullPointerException e1) {
+            ((TextView)row.findViewById(R.id.eventListLocation)).setText(getContext().getString(R.string.location_missing));
             e1.printStackTrace();
         }
 

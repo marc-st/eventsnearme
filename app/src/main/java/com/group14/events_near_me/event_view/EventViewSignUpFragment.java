@@ -53,26 +53,34 @@ public class EventViewSignUpFragment extends Fragment{
             try {
                 List<Address> matches = geo.getFromLocation(event.lat, event.lng, 1);
                 Address address = (matches.isEmpty() ? null : matches.get(0));
-                ((TextView)view.findViewById(R.id.eventLocation)).setText(address.getLocality());
-            } catch (IOException e1) {
+
+                /*StringBuilder addressBuilder = new StringBuilder();
+
+                for (int x = 0; x <= address.getMaxAddressLineIndex(); x++) {
+                    addressBuilder.append(address.getAddressLine(x));
+                }*/
+
+                ((TextView)view.findViewById(R.id.eventLocation)).setText(address.getAddressLine(0));
+            } catch (IOException | NullPointerException e1) {
+                ((TextView)view.findViewById(R.id.eventListLocation)).setText(getString(R.string.location_missing));
                 e1.printStackTrace();
             }
 
             // convert the times from milliseconds into a human readable form
-            SimpleDateFormat sdf = new SimpleDateFormat("dd MMM ''YY", Locale.UK);
+            SimpleDateFormat sdf = new SimpleDateFormat("h:mm d/M/yy", Locale.UK);
             Calendar calendar = Calendar.getInstance();
 
             // set the start time
             calendar.setTimeInMillis(event.startTime);
-            String s = sdf.format(calendar.getTime());
-            ((TextView)view.findViewById(R.id.eventStart)).setText(String.format("Starts at %s", s));
+            ((TextView)view.findViewById(R.id.eventStart)).setText(sdf.format(calendar.getTime()));
 
             // set the end time
             calendar.setTimeInMillis(event.endTime);
-            s = sdf.format(calendar.getTime());
-            ((TextView)view.findViewById(R.id.eventEnd)).setText(String.format(" And finishes at %s", s));
+            ((TextView)view.findViewById(R.id.eventEnd)).setText(sdf.format(calendar.getTime()));
 
-            ((TextView)view.findViewById(R.id.eventOwner)).setText(String.format("Event owner: %s", event.ownerID));
+            TextView textView = view.findViewById(R.id.eventOwner);
+            ((EventsApplication)getActivity().getApplication())
+                    .getFirebaseController().setTextViewToName(textView, event.ownerID);
         }
 
         if(isSignedUp) {

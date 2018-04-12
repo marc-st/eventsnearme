@@ -45,8 +45,7 @@ public class AttendingListAdapter extends ArrayAdapter<SignUp> {
         }
 
         SignUp signUp = signUps.get(position);
-        TextView textView = (TextView)row.findViewById(R.id.attendingName);
-        textView.setText("Loading Loading");
+        TextView textView = row.findViewById(R.id.attendingName);
         app.getFirebaseController().setTextViewToName(textView, signUp.userID);
 
         return row;
