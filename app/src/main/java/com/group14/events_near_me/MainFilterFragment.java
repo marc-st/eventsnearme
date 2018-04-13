@@ -45,31 +45,49 @@ public class MainFilterFragment extends Fragment implements View.OnClickListener
             e.printStackTrace();
             return;
         }
-        if (sortByDistance) {
-            Collections.sort(eventNames, new Comparator<String>() {
-                @Override
-                public int compare(String s, String t1) {
-                    Event eventFirst = events.get(s);
-                    Event eventSecond = events.get(t1);
 
-                    float[] resultFirst = new float[1];
-                    Location.distanceBetween(userLocation.getLatitude(), userLocation.getLongitude(), eventFirst.lat, eventFirst.lng, resultFirst);
-                    float[] resultSecond = new float[1];
-                    Location.distanceBetween(userLocation.getLatitude(), userLocation.getLongitude(), eventSecond.lat, eventSecond.lng, resultSecond);
-                    return (int)(resultFirst[0] - resultSecond[0]);
-                }
-            });
-        } else {
-            Collections.sort(eventNames, new Comparator<String>() {
-                @Override
-                public int compare(String s, String t1) {
-                    Event eventFirst = events.get(s);
-                    Event eventSecond = events.get(t1);
+        // perform task of sorting the list in the background
+        ((EventsApplication)getActivity().getApplication()).getHandler().post(new Runnable() {
+            @Override
+            public void run() {
+                if (sortByDistance) {
+                    Collections.sort(eventNames, new Comparator<String>() {
+                        @Override
+                        public int compare(String s, String t1) {
+                            Event eventFirst = events.get(s);
+                            Event eventSecond = events.get(t1);
 
-                    return (int)(eventFirst.startTime - eventSecond.startTime);
+                            float[] resultFirst = new float[1];
+                            Location.distanceBetween(userLocation.getLatitude(), userLocation.getLongitude(),
+                                    eventFirst.lat, eventFirst.lng, resultFirst);
+                            float[] resultSecond = new float[1];
+                            Location.distanceBetween(userLocation.getLatitude(), userLocation.getLongitude(),
+                                    eventSecond.lat, eventSecond.lng, resultSecond);
+                            return (int)(resultFirst[0] - resultSecond[0]);
+                        }
+                    });
+                } else {
+                    Collections.sort(eventNames, new Comparator<String>() {
+                        @Override
+                        public int compare(String s, String t1) {
+                            Event eventFirst = events.get(s);
+                            Event eventSecond = events.get(t1);
+
+                            return (int)(eventFirst.startTime - eventSecond.startTime);
+                        }
+                    });
                 }
-            });
-        }
+
+                // now that the list is sorted update the list display fragment
+                getActivity().runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        ((MainActivity)getActivity()).updateList();
+                    }
+                });
+            }
+        });
+
     }
 
     @Override
@@ -77,11 +95,11 @@ public class MainFilterFragment extends Fragment implements View.OnClickListener
         switch (v.getId()) {
             case R.id.MainFilterDistance:
                 sortByDistance = true;
-                ((MainActivity)getActivity()).updateFragments();
+                sort();
                 break;
             case R.id.MainFilterStart:
                 sortByDistance = false;
-                ((MainActivity)getActivity()).updateFragments();
+                sort();
                 break;
         }
     }

@@ -93,6 +93,9 @@ public class MainActivity extends FragmentActivity implements ChildEventListener
     public void updateFragments() {
         ((MainFilterFragment)fragments.get(2)).sort();
         ((MainMapFragment)fragments.get(0)).updateMarkers();
+    }
+
+    public void updateList() {
         ((MainListFragment)fragments.get(1)).updateList();
     }
 

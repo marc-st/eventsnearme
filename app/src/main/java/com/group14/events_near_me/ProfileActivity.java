@@ -36,7 +36,8 @@ public class ProfileActivity extends AppCompatActivity implements ChildEventList
 
         // set the adapter for the list
         list = findViewById(R.id.profileEvents);
-        list.setAdapter(new EventListAdapter(this, R.layout.events_list_line, eventNames, events));
+        list.setAdapter(new EventListAdapter(this, R.layout.events_list_line, eventNames,
+                events, ((EventsApplication)getApplication()).getHandler()));
 
         // when an event is clicked get the ID of that event and pass it to the EventViewFragment
         //TODO fix

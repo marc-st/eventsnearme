@@ -30,7 +30,8 @@ public class MainListFragment extends ListFragment {
         events = ((MainActivity)getActivity()).getEvents();
         eventNames = ((MainActivity)getActivity()).getEventNames();
 
-        setListAdapter(new EventListAdapter(getContext(), R.layout.events_list_line, eventNames, events));
+        setListAdapter(new EventListAdapter(getContext(), R.layout.events_list_line, eventNames,
+                events, ((EventsApplication)getActivity().getApplication()).getHandler()));
     }
 
     @Override

@@ -49,22 +49,27 @@ public class EventViewSignUpFragment extends Fragment{
 
             ((TextView)view.findViewById(R.id.eventName)).setText(event.name != null ? event.name : "No Event Name");
 
-            Geocoder geo = new Geocoder(getContext());
-            try {
-                List<Address> matches = geo.getFromLocation(event.lat, event.lng, 1);
-                Address address = (matches.isEmpty() ? null : matches.get(0));
+            // declare the variables as final so they can be accessed by the background task
+            final TextView eventLocation = view.findViewById(R.id.eventLocation);
+            final Event e = event;
 
-                /*StringBuilder addressBuilder = new StringBuilder();
+            // find the name of the event location as a background task
+            ((EventsApplication)getActivity().getApplication()).getHandler().post(new Runnable() {
+                @Override
+                public void run() {
+                    Geocoder geo = new Geocoder(getContext());
+                    try {
+                        List<Address> matches = geo.getFromLocation(e.lat, e.lng, 1);
+                        Address address = (matches.isEmpty() ? null : matches.get(0));
 
-                for (int x = 0; x <= address.getMaxAddressLineIndex(); x++) {
-                    addressBuilder.append(address.getAddressLine(x));
-                }*/
+                        eventLocation.setText(address.getAddressLine(0));
+                    } catch (IOException | NullPointerException e1) {
+                        eventLocation.setText(getString(R.string.location_missing));
+                        e1.printStackTrace();
+                    }
+                }
+            });
 
-                ((TextView)view.findViewById(R.id.eventLocation)).setText(address.getAddressLine(0));
-            } catch (IOException | NullPointerException e1) {
-                ((TextView)view.findViewById(R.id.eventListLocation)).setText(getString(R.string.location_missing));
-                e1.printStackTrace();
-            }
 
             // convert the times from milliseconds into a human readable form
             SimpleDateFormat sdf = new SimpleDateFormat("h:mm d/M/yy", Locale.UK);
