@@ -1,6 +1,7 @@
 package com.group14.events_near_me;
 
 import android.content.Intent;
+import android.support.v4.app.FragmentManager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -40,14 +41,15 @@ public class ProfileActivity extends AppCompatActivity implements ChildEventList
                 events, ((EventsApplication)getApplication()).getHandler()));
 
         // when an event is clicked get the ID of that event and pass it to the EventViewFragment
-        //TODO fix
         list.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
                 String eventID = eventNames.get(i);
-                Intent intent = new Intent(ProfileActivity.this, EventViewFragment.class);
+                Intent intent = new Intent(ProfileActivity.this, MainActivity.class);
                 intent.putExtra("EventID", eventID);
+                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                 startActivity(intent);
+                finish();
             }
         });
 
@@ -167,11 +169,7 @@ public class ProfileActivity extends AppCompatActivity implements ChildEventList
                     public void onDataChange(DataSnapshot dataSnapshot) {
                         Event event = dataSnapshot.getValue(Event.class);
                         // find the event in the events hashmap and remove it
-                        for (int x = 0; x < events.size(); x++) {
-                            if (events.get(x).equals(event)) {
-                                events.remove(x);
-                            }
-                        }
+                        events.remove(dataSnapshot.getKey());
                         // find the event's ID in the eventNames and remove it
                         for (int x = 0; x < eventNames.size(); x++) {
                             if (eventNames.get(x).equals(dataSnapshot.getKey())) {

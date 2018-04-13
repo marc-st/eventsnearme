@@ -1,6 +1,7 @@
 package com.group14.events_near_me;
 
 import android.content.Context;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.location.LocationListener;
@@ -9,6 +10,7 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
+import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.content.ContextCompat;
 import android.util.Log;
@@ -104,8 +106,18 @@ public class MainActivity extends FragmentActivity implements ChildEventListener
         ((MainMapFragment)fragments.get(0)).moveCameraToEvent(eventID);
         FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
         transaction.replace(R.id.mainListFragmentContainer, new EventViewFragment());
-        transaction.addToBackStack(null);
+        transaction.addToBackStack("displayEvent");
         transaction.commit();
+    }
+
+    @Override
+    public void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+
+        // remove the old event being displayed in the main activity, since a new one is appearing
+        getSupportFragmentManager().popBackStack("displayEvent", FragmentManager.POP_BACK_STACK_INCLUSIVE);
+
+        displayEventView(intent.getStringExtra("EventID"));
     }
 
     public HashMap<String, Event> getEvents() {

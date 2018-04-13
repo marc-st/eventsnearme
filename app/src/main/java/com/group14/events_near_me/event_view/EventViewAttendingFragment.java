@@ -2,6 +2,7 @@ package com.group14.events_near_me.event_view;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.v4.app.FragmentManager;
 import android.support.v4.app.ListFragment;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -60,6 +61,7 @@ public class EventViewAttendingFragment extends ListFragment implements ChildEve
     public void onListItemClick(ListView l, View v, int pos, long id) {
         Intent intent = new Intent(EventViewAttendingFragment.this.getActivity(), ProfileActivity.class);
         intent.putExtra("UserID", signUps.get(pos).userID);
+
         startActivity(intent);
     }
 
