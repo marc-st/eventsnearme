@@ -1,7 +1,9 @@
 package com.group14.events_near_me;
 
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.location.LocationListener;
@@ -25,10 +27,8 @@ import com.group14.events_near_me.event_view.EventViewFragment;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-public class MainActivity extends FragmentActivity implements ChildEventListener, LocationListener {
+public class MainActivity extends FragmentActivity implements LocationListener {
     private ArrayList<Fragment> fragments = new ArrayList<>();
-    private HashMap<String, Event> events = new HashMap<>();
-    private ArrayList<String> eventNames = new ArrayList<>();
     private Location location;
     private LocationManager locationManager;
     private String viewedEventID;
@@ -72,13 +72,16 @@ public class MainActivity extends FragmentActivity implements ChildEventListener
             location = new Location(LocationManager.PASSIVE_PROVIDER);
         }
 
-        ((EventsApplication)getApplication()).getFirebaseController().getRoot().child("events").addChildEventListener(this);
+        // start receiving event updates
+        ((EventsApplication)getApplication()).getFirebaseController().getRoot().child("events")
+                .addChildEventListener(((EventsApplication)getApplication()).getEventsController());
     }
 
     @Override
     public void onResume() {
         super.onResume();
 
+        // start receiving location updates
         try {
             locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 2000, 1, this);
         } catch (SecurityException e) {
@@ -89,16 +92,19 @@ public class MainActivity extends FragmentActivity implements ChildEventListener
     @Override
     public void onPause() {
         super.onPause();
+
+        // stop receiving location updates
         locationManager.removeUpdates(this);
     }
 
-    public void updateFragments() {
-        ((MainFilterFragment)fragments.get(2)).sort();
-        ((MainMapFragment)fragments.get(0)).updateMarkers();
-    }
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
 
-    public void updateList() {
-        ((MainListFragment)fragments.get(1)).updateList();
+        // stop receiving event updates
+        ((EventsApplication)getApplication()).getFirebaseController().getRoot().child("events")
+                .removeEventListener(((EventsApplication)getApplication()).getEventsController());
+
     }
 
     public void displayEventView(String eventID) {
@@ -120,14 +126,6 @@ public class MainActivity extends FragmentActivity implements ChildEventListener
         displayEventView(intent.getStringExtra("EventID"));
     }
 
-    public HashMap<String, Event> getEvents() {
-        return events;
-    }
-
-    public ArrayList<String> getEventNames() {
-        return eventNames;
-    }
-
     public Location getLocation() {
         return location;
     }
@@ -137,54 +135,10 @@ public class MainActivity extends FragmentActivity implements ChildEventListener
     }
 
     @Override
-    public void onChildAdded(DataSnapshot dataSnapshot, String previousChildName) {
-        Log.d("MyDebug", "EventsList: onChildAdded:" + dataSnapshot.getKey());
-
-        // add the new event to both the hashmap and its ID to the arraylist
-        Event event = dataSnapshot.getValue(Event.class);
-        events.put(dataSnapshot.getKey(), event);
-        eventNames.add(dataSnapshot.getKey());
-        // force the list to redraw itself with the new event
-        updateFragments();
-    }
-
-    @Override
-    public void onChildChanged(DataSnapshot dataSnapshot, String previousChildName) {
-        Log.d("MyDebug", "EventsList: onChildChanged:" + dataSnapshot.getKey());
-    }
-
-    @Override
-    public void onChildRemoved(DataSnapshot dataSnapshot) {
-        Log.d("MyDebug", "onChildRemoved:" + dataSnapshot.getKey());
-
-        Event event = dataSnapshot.getValue(Event.class);
-        // find the event in the events hashmap and remove it
-        events.remove(dataSnapshot.getKey());
-        // find the event's ID in the eventNames and remove it
-        for (int x = 0; x < eventNames.size(); x++) {
-            if (eventNames.get(x).equals(dataSnapshot.getKey())) {
-                eventNames.remove(x);
-            }
-        }
-        // redraw the list without the event
-        updateFragments();
-    }
-
-    @Override
-    public void onChildMoved(DataSnapshot dataSnapshot, String previousChildName) {
-        Log.d("MyDebug", "EventsList: onChildMoved:" + dataSnapshot.getKey());
-    }
-
-    @Override
-    public void onCancelled(DatabaseError databaseError) {
-        Log.w("MyDebug", "postComments:onCancelled", databaseError.toException());
-    }
-
-    @Override
     public void onLocationChanged(Location location) {
         //Log.d("MyDebug", "location updated: " + location.getLatitude() + ", " + location.getLongitude());
         this.location = location;
-        updateFragments();
+        ((EventsApplication)getApplication()).getEventsController().setUserLocation(location);
     }
 
     @Override

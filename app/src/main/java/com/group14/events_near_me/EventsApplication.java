@@ -22,11 +22,13 @@ public class EventsApplication extends Application {
     private FirebaseController firebase;
     private GoogleSignInAccount account;
     private Handler handler;
+    private EventsController eventsController;
+
     @Override
     public void onCreate() {
         super.onCreate();
 
-        // create a FirebaseController
+        // create the Firebase Controller
         firebase = new FirebaseController();
         // generate what details we want from the google sign in session
         GoogleSignInOptions options = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
@@ -56,6 +58,13 @@ public class EventsApplication extends Application {
         HandlerThread handlerThread = new HandlerThread("backgroundTasks");
         handlerThread.start();
         handler = new Handler(handlerThread.getLooper());
+
+        // create the Events Controller
+        eventsController = new EventsController(this);
+    }
+
+    public EventsController getEventsController() {
+        return eventsController;
     }
 
     public Handler getHandler() {

@@ -43,7 +43,7 @@ public class EventViewSignUpFragment extends Fragment{
         View view = inflater.inflate(R.layout.fragment_event_view_sign_up, null);
 
         eventID = ((MainActivity)getActivity()).getViewedEventID();
-        Event event = ((MainActivity)getActivity()).getEvents().get(eventID);
+        Event event = ((EventsApplication)getActivity().getApplication()).getEventsController().getEvents().get(eventID);
 
         if(event != null){
 
