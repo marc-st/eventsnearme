@@ -16,7 +16,6 @@ import java.util.Iterator;
 
 /**
  * Created by Ben on 14/04/2018.
- * 
  * a class for reading event information from firebase and storing it in a hashmap for the app to use
  */
 public class EventsController implements ChildEventListener {

@@ -1,9 +1,7 @@
 package com.group14.events_near_me;
 
-import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.location.LocationListener;
@@ -15,17 +13,10 @@ import android.os.Bundle;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.content.ContextCompat;
-import android.util.Log;
-import android.view.KeyEvent;
-import android.view.View;
 
-import com.google.firebase.database.ChildEventListener;
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
 import com.group14.events_near_me.event_view.EventViewFragment;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 
 public class MainActivity extends FragmentActivity implements LocationListener {
     private ArrayList<Fragment> fragments = new ArrayList<>();
@@ -111,6 +102,7 @@ public class MainActivity extends FragmentActivity implements LocationListener {
         viewedEventID = eventID;
         ((MainMapFragment)fragments.get(0)).moveCameraToEvent(eventID);
         FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+        transaction.setCustomAnimations(R.anim.enter_from_below, R.anim.shrink_and_fade_out, R.anim.grow_and_fade_in, R.anim.exit_to_below);
         transaction.replace(R.id.mainListFragmentContainer, new EventViewFragment());
         transaction.addToBackStack("displayEvent");
         transaction.commit();
