@@ -14,6 +14,12 @@
         android:text="@string/text_default" />
 
     <TextView
+        android:id="@+id/eventPrivate"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/text_default"/>
+
+    <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textSize="30sp"
@@ -78,8 +84,26 @@
         android:layout_gravity="center"
         android:text="@string/sign_up"
         android:layout_margin="10sp"
-        android:id="@+id/signUp"
+        android:id="@+id/signUpButton"
         android:enabled="true" />
+    <LinearLayout
+        android:id="@+id/event_admin_buttons"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:visibility="gone">
+        <Button
+            android:id="@+id/inviteButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/event_invite"
+            android:enabled="false"/>
+        <Button
+            android:id="@+id/deleteButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/event_delete"/>
+    </LinearLayout>
 
     <TextView
         android:layout_width="wrap_content"

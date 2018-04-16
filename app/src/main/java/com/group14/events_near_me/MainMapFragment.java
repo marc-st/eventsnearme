@@ -130,6 +130,7 @@ public class MainMapFragment extends Fragment implements OnMapReadyCallback, Goo
             intent.putExtra("lat", latLng.latitude);
             intent.putExtra("lng", latLng.longitude);
             startActivity(intent);
+            addingEvent = false;
         }
     }
 

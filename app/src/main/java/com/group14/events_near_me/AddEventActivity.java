@@ -3,6 +3,7 @@ package com.group14.events_near_me;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.CheckBox;
 import android.widget.DatePicker;
 import android.widget.TextView;
 import android.widget.TimePicker;
@@ -44,6 +45,7 @@ public class AddEventActivity extends AppCompatActivity implements View.OnClickL
         e.lat = lat;
         e.lng = lng;
         e.ownerID = ((EventsApplication)getApplication()).getFirebaseController().getCurrentUserId();
+        e.isPrivate = ((CheckBox)findViewById(R.id.addEventPrivate)).isChecked();
 
         Calendar calendar = Calendar.getInstance();
         calendar.set(startDatePicker.getYear(), startDatePicker.getMonth(), startDatePicker.getDayOfMonth(),

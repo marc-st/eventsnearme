@@ -64,8 +64,7 @@ public class MainActivity extends FragmentActivity implements LocationListener {
         }
 
         // start receiving event updates
-        ((EventsApplication)getApplication()).getFirebaseController().getRoot().child("events")
-                .addChildEventListener(((EventsApplication)getApplication()).getEventsController());
+        ((EventsApplication)getApplication()).getEventsController().startListeners();
     }
 
     @Override
@@ -93,9 +92,7 @@ public class MainActivity extends FragmentActivity implements LocationListener {
         super.onDestroy();
 
         // stop receiving event updates
-        ((EventsApplication)getApplication()).getFirebaseController().getRoot().child("events")
-                .removeEventListener(((EventsApplication)getApplication()).getEventsController());
-
+        ((EventsApplication)getApplication()).getEventsController().stopListeners();
     }
 
     public void displayEventView(String eventID) {

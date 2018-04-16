@@ -71,6 +71,12 @@
         </LinearLayout>
     </LinearLayout>
 
+    <CheckBox
+        android:id="@+id/addEventPrivate"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/enter_private" />
+
     <Button
         android:id="@+id/addEventConfirm"
         android:layout_width="wrap_content"

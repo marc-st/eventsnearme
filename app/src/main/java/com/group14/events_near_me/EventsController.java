@@ -20,13 +20,38 @@ import java.util.Iterator;
  */
 public class EventsController implements ChildEventListener {
     EventsApplication app;
+    FirebaseController fbc;
     private HashMap<String, Event> events = new HashMap<>();
     private ArrayList<String> eventNames = new ArrayList<>();
+    private ArrayList<String> privateEventNames = new ArrayList<>();
     private Location userLocation;
     private boolean sortByDistance = true;
+    private InvitationListener invitationListener;
 
     public EventsController(EventsApplication app) {
         this.app = app;
+        fbc = app.getFirebaseController();
+    }
+
+    public void startListeners() {
+        // get all public events
+        fbc.getRoot().child("events").orderByChild("isPrivate").equalTo(false).addChildEventListener(this);
+
+        // get private events that the user is allowed to see
+        invitationListener = new InvitationListener();
+        fbc.getRoot().child("invitations").orderByChild("userID")
+                .equalTo(fbc.getCurrentUserId()).addChildEventListener(invitationListener);
+    }
+
+    public void stopListeners() {
+        // stop listener for public events
+        fbc.getRoot().child("events")
+                .orderByChild("isPrivate").equalTo(false).removeEventListener(this);
+
+        // stop listener for private events
+        for (String s : privateEventNames) {
+            fbc.getRoot().child("events").child(s).removeEventListener(invitationListener);
+        }
     }
 
     public void sort() {
@@ -162,5 +187,34 @@ public class EventsController implements ChildEventListener {
     @Override
     public void onCancelled(DatabaseError databaseError) {
         Log.w("MyDebug", "postComments:onCancelled", databaseError.toException());
+    }
+
+    private class InvitationListener implements ChildEventListener {
+        @Override
+        public void onChildAdded(DataSnapshot dataSnapshot, String s) {
+            Invitation invitation = dataSnapshot.getValue(Invitation.class);
+            privateEventNames.add(invitation.eventID);
+            fbc.getRoot().child("events").child(invitation.eventID).addChildEventListener(this);
+        }
+
+        @Override
+        public void onChildChanged(DataSnapshot dataSnapshot, String s) {
+
+        }
+
+        @Override
+        public void onChildRemoved(DataSnapshot dataSnapshot) {
+
+        }
+
+        @Override
+        public void onChildMoved(DataSnapshot dataSnapshot, String s) {
+
+        }
+
+        @Override
+        public void onCancelled(DatabaseError databaseError) {
+            Log.w("MyDebug", "InvitationListener:onCancelled", databaseError.toException());
+        }
     }
 }
