@@ -73,6 +73,9 @@ public class SignInActivity extends AppCompatActivity implements View.OnClickLis
                 User user = new User(account.getGivenName(), account.getFamilyName(), gender, dateOfBirth.getTimeInMillis(), account.getIdToken());
                 ((EventsApplication)this.getApplication()).getFirebaseController().addUser(user);
 
+                // start looking for private events now that the user is signed in
+                ((EventsApplication)getApplication()).getEventsController().notifyNameAvailable();
+
                 // finish this activity bringing up the default (main)
                 finish();
         }
@@ -128,6 +131,9 @@ public class SignInActivity extends AppCompatActivity implements View.OnClickLis
         // A user was found with our token
         Log.d("MyDebug", "SignInActivity: onChildAdded:" + dataSnapshot.getKey());
         ((EventsApplication)getApplication()).getFirebaseController().setCurrentUserId(dataSnapshot.getKey());
+
+        // start looking for private events now that the user is signed in
+        ((EventsApplication)getApplication()).getEventsController().notifyNameAvailable();
 
         ((EventsApplication)getApplication()).getFirebaseController()
                 .getRoot().child("users").orderByChild("googleAuthToken")

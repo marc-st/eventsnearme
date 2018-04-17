@@ -27,6 +27,7 @@ public class EventsController implements ChildEventListener {
     private Location userLocation;
     private boolean sortByDistance = true;
     private InvitationListener invitationListener;
+    private boolean isListening = false;
 
     public EventsController(EventsApplication app) {
         this.app = app;
@@ -38,9 +39,13 @@ public class EventsController implements ChildEventListener {
         fbc.getRoot().child("events").orderByChild("isPrivate").equalTo(false).addChildEventListener(this);
 
         // get private events that the user is allowed to see
-        invitationListener = new InvitationListener();
-        fbc.getRoot().child("invitations").orderByChild("userID")
-                .equalTo(fbc.getCurrentUserId()).addChildEventListener(invitationListener);
+        // when the app first starts this is called before the userID is available, so a null check is needed
+        String userID = fbc.getCurrentUserId();
+        if (userID != null && !isListening) {
+            invitationListener = new InvitationListener();
+            fbc.getRoot().child("invitations").orderByChild("userID").equalTo(fbc.getCurrentUserId()).addChildEventListener(invitationListener);
+            isListening = true;
+        }
     }
 
     public void stopListeners() {
@@ -108,6 +113,14 @@ public class EventsController implements ChildEventListener {
     public void setSortByDistance(boolean sortByDistance) {
         this.sortByDistance = sortByDistance;
         sort();
+    }
+
+    public void notifyNameAvailable() {
+        if (!isListening) {
+            invitationListener = new InvitationListener();
+            fbc.getRoot().child("invitations").orderByChild("userID").equalTo(fbc.getCurrentUserId()).addChildEventListener(invitationListener);
+            isListening = true;
+        }
     }
 
     public HashMap<String, Event> getEvents() {
@@ -192,9 +205,10 @@ public class EventsController implements ChildEventListener {
     private class InvitationListener implements ChildEventListener {
         @Override
         public void onChildAdded(DataSnapshot dataSnapshot, String s) {
+            Log.d("MyDebug", "InvitationsList: onChildAdded:" + dataSnapshot.getKey());
             Invitation invitation = dataSnapshot.getValue(Invitation.class);
             privateEventNames.add(invitation.eventID);
-            fbc.getRoot().child("events").child(invitation.eventID).addChildEventListener(this);
+            fbc.getRoot().child("events").orderByKey().equalTo(invitation.eventID).addChildEventListener(EventsController.this);
         }
 
         @Override

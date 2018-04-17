@@ -173,8 +173,10 @@ public class EventViewSignUpFragment extends Fragment{
         // remove the event
         ref.child("events").child(eventID).removeValue();
 
-        // remove sign ups for the event
-        ref.child("signups").orderByChild("eventID").equalTo(eventID).addChildEventListener(new ChildEventListener() {
+        // remove either invitations or sign ups for the event
+        ref.child(((EventsApplication)getActivity().getApplication())
+                        .getEventsController().getEvents().get(eventID).isPrivate ? "invitations" : "signups")
+                .orderByChild("eventID").equalTo(eventID).addChildEventListener(new ChildEventListener() {
             @Override
             public void onChildAdded(DataSnapshot dataSnapshot, String s) {
                 dataSnapshot.getRef().removeValue();
