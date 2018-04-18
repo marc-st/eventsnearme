@@ -10,6 +10,10 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+
+import com.group14.events_near_me.Event;
+import com.group14.events_near_me.EventsApplication;
+import com.group14.events_near_me.MainActivity;
 import com.group14.events_near_me.R;
 
 import java.util.ArrayList;
@@ -28,10 +32,19 @@ public class EventViewFragment extends Fragment {
 
         fragments = new ArrayList<>();
 
+
         // add each of the three fragments to the adapter
         fragments.add(new EventViewSignUpFragment());
         fragments.add(new EventViewDiscussionFragment());
-        fragments.add(new EventViewAttendingFragment());
+
+        // if the event's private add an invited fragment otherwise an attending fragment
+        Event event = ((EventsApplication)getActivity().getApplication())
+                .getEventsController().getEvents().get(((MainActivity)getActivity()).getViewedEventID());
+        if (event.isPrivate) {
+            fragments.add(new EventViewInvitedFragment());
+        } else {
+            fragments.add(new EventViewAttendingFragment());
+        }
     }
 
     @Override

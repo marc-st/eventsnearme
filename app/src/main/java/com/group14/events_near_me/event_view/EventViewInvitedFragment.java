@@ -24,7 +24,7 @@ import java.util.ArrayList;
  * Created by Ben on 17/04/2018.
  */
 
-public class EventViewInvitesFragment extends ListFragment implements ChildEventListener {
+public class EventViewInvitedFragment extends ListFragment implements ChildEventListener {
     private ArrayList<Invitation> invitations = new ArrayList<>();
     private String eventID;
 
@@ -36,7 +36,7 @@ public class EventViewInvitesFragment extends ListFragment implements ChildEvent
         eventID = ((MainActivity)getActivity()).getViewedEventID();
 
         // set list adapter for attending list
-        setListAdapter(new InvitesListAdapter(getContext(), R.layout.event_attending_list_line, invitations, (EventsApplication)getActivity().getApplication()));
+        setListAdapter(new InvitedListAdapter(getContext(), R.layout.event_invited_list_line, invitations, (EventsApplication)getActivity().getApplication()));
 
         ((EventsApplication)getActivity().getApplication()).getFirebaseController()
                 .getRoot().child("invitations").orderByChild("eventID")
@@ -59,7 +59,7 @@ public class EventViewInvitesFragment extends ListFragment implements ChildEvent
 
     @Override
     public void onListItemClick(ListView l, View v, int pos, long id) {
-        Intent intent = new Intent(EventViewInvitesFragment.this.getActivity(), ProfileActivity.class);
+        Intent intent = new Intent(EventViewInvitedFragment.this.getActivity(), ProfileActivity.class);
         intent.putExtra("UserID", invitations.get(pos).userID);
 
         startActivity(intent);
@@ -71,7 +71,7 @@ public class EventViewInvitesFragment extends ListFragment implements ChildEvent
         Invitation invitation = dataSnapshot.getValue(Invitation.class);
         invitations.add(invitation);
 
-        ((AttendingListAdapter)getListAdapter()).notifyDataSetChanged();
+        ((InvitedListAdapter)getListAdapter()).notifyDataSetChanged();
 
         if (invitation.userID.equals(((EventsApplication)getActivity().getApplication()).getFirebaseController().getCurrentUserId())) {
             ((EventViewFragment)getParentFragment()).setSignedUp();
@@ -92,7 +92,7 @@ public class EventViewInvitesFragment extends ListFragment implements ChildEvent
                invitations.remove(x);
             }
         }
-        ((AttendingListAdapter)getListAdapter()).notifyDataSetChanged();
+        ((InvitedListAdapter)getListAdapter()).notifyDataSetChanged();
     }
 
     @Override

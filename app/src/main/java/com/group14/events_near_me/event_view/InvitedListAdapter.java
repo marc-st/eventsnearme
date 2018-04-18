@@ -21,14 +21,14 @@ import java.util.ArrayList;
  * Created by Ben on 17/04/2018.
  */
 
-public class InvitesListAdapter extends ArrayAdapter<Invitation> {
+public class InvitedListAdapter extends ArrayAdapter<Invitation> {
 
     private EventsApplication app;
     private Context context;
     private int resourceId;
     private ArrayList<Invitation> invitations;
 
-    public InvitesListAdapter(Context context, int layoutResourceId, ArrayList<Invitation> invitations, EventsApplication app) {
+    public InvitedListAdapter(Context context, int layoutResourceId, ArrayList<Invitation> invitations, EventsApplication app) {
         super(context, layoutResourceId, invitations);
         this.context = context;
         this.resourceId = layoutResourceId;
