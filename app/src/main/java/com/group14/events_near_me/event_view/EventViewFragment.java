@@ -85,4 +85,8 @@ public class EventViewFragment extends Fragment {
         ((EventViewSignUpFragment)fragments.get(0)).setSignedUp();
     }
 
+    public void setInvited(String invitationId, boolean accepted) {
+        ((EventViewSignUpFragment)fragments.get(0)).setInvited(invitationId, accepted);
+    }
+
 }

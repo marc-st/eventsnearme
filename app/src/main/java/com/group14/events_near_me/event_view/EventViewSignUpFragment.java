@@ -10,6 +10,7 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.TextView;
 
 import com.google.firebase.database.ChildEventListener;
@@ -34,8 +35,6 @@ import java.util.Locale;
  */
 
 public class EventViewSignUpFragment extends Fragment{
-
-    private boolean isSignedUp = false;
     private String eventID;
 
     @Override
@@ -44,6 +43,17 @@ public class EventViewSignUpFragment extends Fragment{
 
         eventID = ((MainActivity)getActivity()).getViewedEventID();
         Event event = ((EventsApplication)getActivity().getApplication()).getEventsController().getEvents().get(eventID);
+
+        if (event.isPrivate) {
+            ((Button)view.findViewById(R.id.signUpButton)).setText("Accept Invitation");
+        } else {
+            view.findViewById(R.id.signUpButton).setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    signUpToEvent();
+                }
+            });
+        }
 
         if(event == null){
             ((TextView)view.findViewById(R.id.eventName)).setText("Error");
@@ -74,7 +84,7 @@ public class EventViewSignUpFragment extends Fragment{
                     }
                 }
             });
-        
+
         // convert the times from milliseconds into a human readable form
         SimpleDateFormat sdf = new SimpleDateFormat("h:mm d/M/yy", Locale.UK);
         Calendar calendar = Calendar.getInstance();
@@ -100,18 +110,6 @@ public class EventViewSignUpFragment extends Fragment{
                 view.findViewById(R.id.inviteButton).setEnabled(true);
             }
         }
-
-        if(isSignedUp) {
-            view.findViewById(R.id.isAttending).setVisibility(View.VISIBLE);
-            view.findViewById(R.id.signUpButton).setEnabled(false);
-        }
-
-        view.findViewById(R.id.signUpButton).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                signUpToEvent();
-            }
-        });
 
         view.findViewById(R.id.deleteButton).setOnClickListener(new View.OnClickListener() {
             @Override
@@ -166,17 +164,30 @@ public class EventViewSignUpFragment extends Fragment{
         SignUp signup = new SignUp(eventID, userID, timestamp);
         ref.child(key).setValue(signup);
 
-        isSignedUp = true;
 
     }
 
     public void setSignedUp() {
-        this.isSignedUp = true;
         try {
             getView().findViewById(R.id.isAttending).setVisibility(View.VISIBLE);
             getView().findViewById(R.id.signUpButton).setEnabled(false);
         } catch (NullPointerException e) {
             e.printStackTrace();
+        }
+    }
+
+    public void setInvited(final String invitationID, boolean accepted) {
+        if (accepted) {
+            getView().findViewById(R.id.isAttending).setVisibility(View.VISIBLE);
+            getView().findViewById(R.id.signUpButton).setEnabled(false);
+        } else {
+            getView().findViewById(R.id.signUpButton).setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    ((EventsApplication)getActivity().getApplication()).getFirebaseController()
+                            .getRoot().child("invitations").child(invitationID).child("accepted").setValue(true);
+                }
+            });
         }
     }
 

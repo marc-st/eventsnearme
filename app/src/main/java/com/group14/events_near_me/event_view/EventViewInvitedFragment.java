@@ -74,7 +74,7 @@ public class EventViewInvitedFragment extends ListFragment implements ChildEvent
         ((InvitedListAdapter)getListAdapter()).notifyDataSetChanged();
 
         if (invitation.userID.equals(((EventsApplication)getActivity().getApplication()).getFirebaseController().getCurrentUserId())) {
-            ((EventViewFragment)getParentFragment()).setSignedUp();
+            ((EventViewFragment)getParentFragment()).setInvited(dataSnapshot.getKey(), invitation.accepted);
         }
     }
 
