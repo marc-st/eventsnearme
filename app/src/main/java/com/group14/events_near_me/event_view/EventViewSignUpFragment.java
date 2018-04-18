@@ -2,6 +2,7 @@ package com.group14.events_near_me.event_view;
 
 import android.app.AlertDialog;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.location.Address;
 import android.location.Geocoder;
 import android.support.v4.app.Fragment;
@@ -17,6 +18,7 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.group14.events_near_me.Event;
 import com.group14.events_near_me.EventsApplication;
+import com.group14.events_near_me.InviteActivity;
 import com.group14.events_near_me.MainActivity;
 import com.group14.events_near_me.R;
 import com.group14.events_near_me.SignUp;
@@ -72,8 +74,7 @@ public class EventViewSignUpFragment extends Fragment{
                     }
                 }
             });
-
-
+        
         // convert the times from milliseconds into a human readable form
         SimpleDateFormat sdf = new SimpleDateFormat("h:mm d/M/yy", Locale.UK);
         Calendar calendar = Calendar.getInstance();
@@ -132,6 +133,17 @@ public class EventViewSignUpFragment extends Fragment{
                     }
                 });
                 alert.show();
+            }
+        });
+
+        view.findViewById(R.id.inviteButton).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent intent = new Intent(EventViewSignUpFragment.this.getActivity(), InviteActivity.class);
+                intent.putExtra("EventID", eventID);
+
+                startActivity(intent);
+
             }
         });
 

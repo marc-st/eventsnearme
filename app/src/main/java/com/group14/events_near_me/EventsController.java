@@ -174,15 +174,17 @@ public class EventsController implements ChildEventListener {
 
     @Override
     public void onChildRemoved(DataSnapshot dataSnapshot) {
-        Log.d("MyDebug", "onChildRemoved:" + dataSnapshot.getKey());
-
-        Event event = dataSnapshot.getValue(Event.class);
+        String key = dataSnapshot.getKey();
+        Log.d("MyDebug", "onChildRemoved:" + key);
         // find the event in the events hashmap and remove it
-        events.remove(dataSnapshot.getKey());
+        events.remove(key);
         // find the event's ID in the eventNames and remove it
-        for (int x = 0; x < eventNames.size(); x++) {
-            if (eventNames.get(x).equals(dataSnapshot.getKey())) {
-                eventNames.remove(x);
+        Iterator<String> iterator = eventNames.iterator();
+        while(iterator.hasNext()) {
+            String s = iterator.next();
+            if (s.equals(key)) {
+                iterator.remove();
+                break;
             }
         }
 

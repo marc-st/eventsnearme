@@ -20,12 +20,13 @@
             android:name="com.google.android.geo.API_KEY"
             android:value="@string/google_maps_api_key" />
 
-        <activity android:name=".SignInActivity"
-            android:noHistory="true">
-        </activity>
+        <activity
+            android:name=".SignInActivity"
+            android:noHistory="true"></activity>
         <activity android:name=".ProfileActivity" />
         <activity android:name=".AddEventActivity" />
-        <activity android:name=".MainActivity"
+        <activity
+            android:name=".MainActivity"
             android:launchMode="singleTop">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -33,6 +34,7 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity android:name=".InviteActivity"></activity>
     </application>
 
 </manifest>

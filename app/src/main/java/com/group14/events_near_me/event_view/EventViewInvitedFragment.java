@@ -85,10 +85,10 @@ public class EventViewInvitedFragment extends ListFragment implements ChildEvent
 
     @Override
     public void onChildRemoved(DataSnapshot dataSnapshot) {
-        SignUp signUp = dataSnapshot.getValue(SignUp.class);
+        Invitation invitation = dataSnapshot.getValue(Invitation.class);
         // find that sign up in the list and remove it
         for (int x = 0; x < invitations.size(); x++) {
-            if (invitations.get(x).equals(signUp)) {
+            if (invitations.get(x).equals(invitation)) {
                invitations.remove(x);
             }
         }
