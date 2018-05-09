@@ -95,6 +95,11 @@ public class MainMapFragment extends Fragment implements OnMapReadyCallback, Goo
         markerOptions.position(new LatLng(location.getLatitude(), location.getLongitude()));
         markerOptions.title("Your location");
         markerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE));
+        try {
+            markerOptions.rotation(((MainActivity) getActivity()).getRotation());
+        } catch (NullPointerException e) {
+
+        }
         map.addMarker(markerOptions);
     }
 

@@ -3,6 +3,11 @@ package com.group14.events_near_me;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.hardware.GeomagneticField;
+import android.hardware.Sensor;
+import android.hardware.SensorEvent;
+import android.hardware.SensorEventListener;
+import android.hardware.SensorManager;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
@@ -13,16 +18,25 @@ import android.os.Bundle;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.content.ContextCompat;
+import android.widget.Toast;
 
+import com.google.android.gms.maps.MapFragment;
 import com.group14.events_near_me.event_view.EventViewFragment;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 
-public class MainActivity extends FragmentActivity implements LocationListener {
+public class MainActivity extends FragmentActivity implements LocationListener, SensorEventListener {
     private ArrayList<Fragment> fragments = new ArrayList<>();
     private Location location;
     private LocationManager locationManager;
+    private SensorManager sensorManager;
+    private Sensor accelerometer;
+    private Sensor magnetometer;
+    private float[] accelerometerData;
+    private float[] magnetometerData;
     private String viewedEventID;
+    private float rotation;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -51,6 +65,10 @@ public class MainActivity extends FragmentActivity implements LocationListener {
 
         }
 
+        sensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
+        magnetometer = sensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD);
+        accelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
+
         locationManager = (LocationManager)getSystemService(Context.LOCATION_SERVICE);
         try {
             location = locationManager.getLastKnownLocation(LocationManager.PASSIVE_PROVIDER);
@@ -71,6 +89,9 @@ public class MainActivity extends FragmentActivity implements LocationListener {
     public void onResume() {
         super.onResume();
 
+        sensorManager.registerListener(this, magnetometer, SensorManager.SENSOR_DELAY_NORMAL);
+        sensorManager.registerListener(this, accelerometer, SensorManager.SENSOR_DELAY_NORMAL);
+
         // start receiving location updates
         try {
             locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 2000, 1, this);
@@ -83,6 +104,9 @@ public class MainActivity extends FragmentActivity implements LocationListener {
     public void onPause() {
         super.onPause();
 
+        sensorManager.unregisterListener(this, magnetometer);
+        sensorManager.unregisterListener(this, accelerometer);
+
         // stop receiving location updates
         locationManager.removeUpdates(this);
     }
@@ -93,6 +117,30 @@ public class MainActivity extends FragmentActivity implements LocationListener {
 
         // stop receiving event updates
         ((EventsApplication)getApplication()).getEventsController().stopListeners();
+    }
+
+    @Override
+    public void onSensorChanged(SensorEvent event) {
+        if (event.sensor == magnetometer) {
+            magnetometerData = event.values.clone();
+        } else {
+            accelerometerData = event.values.clone();
+        }
+        if (accelerometerData != null && magnetometerData != null) {
+            float[] rotationMatrix = new float[9];
+            SensorManager.getRotationMatrix(rotationMatrix, null, accelerometerData, magnetometerData);
+            float[] orientation = new float[3];
+            SensorManager.getOrientation(rotationMatrix, orientation);
+            // get orientation in x dimension
+            this.rotation = (float)(Math.toDegrees(orientation[0]));
+
+            ((MainMapFragment)fragments.get(0)).updateMarkers();
+        }
+    }
+
+    @Override
+    public void onAccuracyChanged(Sensor sensor, int accuracy) {
+
     }
 
     public void displayEventView(String eventID) {
@@ -121,6 +169,10 @@ public class MainActivity extends FragmentActivity implements LocationListener {
 
     public String getViewedEventID() {
         return viewedEventID;
+    }
+
+    public float getRotation() {
+        return rotation;
     }
 
     @Override
