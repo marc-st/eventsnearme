@@ -2,7 +2,6 @@ package com.group14.events_near_me.event_view;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.support.v4.app.FragmentManager;
 import android.support.v4.app.ListFragment;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -13,6 +12,7 @@ import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.group14.events_near_me.EventsApplication;
+import com.group14.events_near_me.Invitation;
 import com.group14.events_near_me.MainActivity;
 import com.group14.events_near_me.ProfileActivity;
 import com.group14.events_near_me.R;
@@ -21,11 +21,11 @@ import com.group14.events_near_me.SignUp;
 import java.util.ArrayList;
 
 /**
- * Created by Ben on 05/03/2018.
+ * Created by Ben on 17/04/2018.
  */
 
-public class EventViewAttendingFragment extends ListFragment implements ChildEventListener {
-    private ArrayList<SignUp> signUps = new ArrayList<>();
+public class EventViewInvitedFragment extends ListFragment implements ChildEventListener {
+    private ArrayList<Invitation> invitations = new ArrayList<>();
     private String eventID;
 
     @Override
@@ -36,10 +36,10 @@ public class EventViewAttendingFragment extends ListFragment implements ChildEve
         eventID = ((MainActivity)getActivity()).getViewedEventID();
 
         // set list adapter for attending list
-        setListAdapter(new AttendingListAdapter(getContext(), R.layout.event_attending_list_line, signUps, (EventsApplication)getActivity().getApplication()));
+        setListAdapter(new InvitedListAdapter(getContext(), R.layout.event_invited_list_line, invitations, (EventsApplication)getActivity().getApplication()));
 
         ((EventsApplication)getActivity().getApplication()).getFirebaseController()
-                .getRoot().child("signups").orderByChild("eventID")
+                .getRoot().child("invitations").orderByChild("eventID")
                 .equalTo(eventID).addChildEventListener(this);
     }
 
@@ -48,7 +48,7 @@ public class EventViewAttendingFragment extends ListFragment implements ChildEve
         super.onDestroy();
 
         ((EventsApplication)getActivity().getApplication()).getFirebaseController()
-                .getRoot().child("signups").orderByChild("eventID")
+                .getRoot().child("invitations").orderByChild("eventID")
                 .equalTo(eventID).removeEventListener(this);
     }
 
@@ -59,8 +59,8 @@ public class EventViewAttendingFragment extends ListFragment implements ChildEve
 
     @Override
     public void onListItemClick(ListView l, View v, int pos, long id) {
-        Intent intent = new Intent(EventViewAttendingFragment.this.getActivity(), ProfileActivity.class);
-        intent.putExtra("UserID", signUps.get(pos).userID);
+        Intent intent = new Intent(EventViewInvitedFragment.this.getActivity(), ProfileActivity.class);
+        intent.putExtra("UserID", invitations.get(pos).userID);
 
         startActivity(intent);
     }
@@ -68,13 +68,13 @@ public class EventViewAttendingFragment extends ListFragment implements ChildEve
     @Override
     public void onChildAdded(DataSnapshot dataSnapshot, String s) {
         // add new sign up to list of sign ups then update listView
-        SignUp signUp = dataSnapshot.getValue(SignUp.class);
-        signUps.add(signUp);
+        Invitation invitation = dataSnapshot.getValue(Invitation.class);
+        invitations.add(invitation);
 
-        ((AttendingListAdapter)getListAdapter()).notifyDataSetChanged();
+        ((InvitedListAdapter)getListAdapter()).notifyDataSetChanged();
 
-        if (signUp.userID.equals(((EventsApplication)getActivity().getApplication()).getFirebaseController().getCurrentUserId())) {
-            ((EventViewFragment)getParentFragment()).setSignedUp();
+        if (invitation.userID.equals(((EventsApplication)getActivity().getApplication()).getFirebaseController().getCurrentUserId())) {
+            ((EventViewFragment)getParentFragment()).setInvited(dataSnapshot.getKey(), invitation.accepted);
         }
     }
 
@@ -85,14 +85,14 @@ public class EventViewAttendingFragment extends ListFragment implements ChildEve
 
     @Override
     public void onChildRemoved(DataSnapshot dataSnapshot) {
-        SignUp signUp = dataSnapshot.getValue(SignUp.class);
+        Invitation invitation = dataSnapshot.getValue(Invitation.class);
         // find that sign up in the list and remove it
-        for (int x = 0; x < signUps.size(); x++) {
-            if (signUps.get(x).equals(signUp)) {
-                signUps.remove(x);
+        for (int x = 0; x < invitations.size(); x++) {
+            if (invitations.get(x).equals(invitation)) {
+               invitations.remove(x);
             }
         }
-        ((AttendingListAdapter)getListAdapter()).notifyDataSetChanged();
+        ((InvitedListAdapter)getListAdapter()).notifyDataSetChanged();
     }
 
     @Override

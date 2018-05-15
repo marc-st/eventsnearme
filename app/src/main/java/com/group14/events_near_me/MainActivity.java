@@ -1,7 +1,13 @@
 package com.group14.events_near_me;
 
 import android.content.Context;
+import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.hardware.GeomagneticField;
+import android.hardware.Sensor;
+import android.hardware.SensorEvent;
+import android.hardware.SensorEventListener;
+import android.hardware.SensorManager;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
@@ -9,27 +15,28 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
+import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.content.ContextCompat;
-import android.util.Log;
-import android.view.KeyEvent;
-import android.view.View;
+import android.widget.Toast;
 
-import com.google.firebase.database.ChildEventListener;
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
+import com.google.android.gms.maps.MapFragment;
 import com.group14.events_near_me.event_view.EventViewFragment;
 
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.Arrays;
 
-public class MainActivity extends FragmentActivity implements ChildEventListener, LocationListener {
+public class MainActivity extends FragmentActivity implements LocationListener, SensorEventListener {
     private ArrayList<Fragment> fragments = new ArrayList<>();
-    private HashMap<String, Event> events = new HashMap<>();
-    private ArrayList<String> eventNames = new ArrayList<>();
     private Location location;
     private LocationManager locationManager;
+    private SensorManager sensorManager;
+    private Sensor accelerometer;
+    private Sensor magnetometer;
+    private float[] accelerometerData;
+    private float[] magnetometerData;
     private String viewedEventID;
+    private float rotation;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -58,6 +65,10 @@ public class MainActivity extends FragmentActivity implements ChildEventListener
 
         }
 
+        sensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
+        magnetometer = sensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD);
+        accelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
+
         locationManager = (LocationManager)getSystemService(Context.LOCATION_SERVICE);
         try {
             location = locationManager.getLastKnownLocation(LocationManager.PASSIVE_PROVIDER);
@@ -70,13 +81,18 @@ public class MainActivity extends FragmentActivity implements ChildEventListener
             location = new Location(LocationManager.PASSIVE_PROVIDER);
         }
 
-        ((EventsApplication)getApplication()).getFirebaseController().getRoot().child("events").addChildEventListener(this);
+        // start receiving event updates
+        ((EventsApplication)getApplication()).getEventsController().startListeners();
     }
 
     @Override
     public void onResume() {
         super.onResume();
 
+        sensorManager.registerListener(this, magnetometer, SensorManager.SENSOR_DELAY_NORMAL);
+        sensorManager.registerListener(this, accelerometer, SensorManager.SENSOR_DELAY_NORMAL);
+
+        // start receiving location updates
         try {
             locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 2000, 1, this);
         } catch (SecurityException e) {
@@ -87,30 +103,64 @@ public class MainActivity extends FragmentActivity implements ChildEventListener
     @Override
     public void onPause() {
         super.onPause();
+
+        sensorManager.unregisterListener(this, magnetometer);
+        sensorManager.unregisterListener(this, accelerometer);
+
+        // stop receiving location updates
         locationManager.removeUpdates(this);
     }
 
-    public void updateFragments() {
-        ((MainFilterFragment)fragments.get(2)).sort();
-        ((MainMapFragment)fragments.get(0)).updateMarkers();
-        ((MainListFragment)fragments.get(1)).updateList();
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+
+        // stop receiving event updates
+        ((EventsApplication)getApplication()).getEventsController().stopListeners();
+    }
+
+    @Override
+    public void onSensorChanged(SensorEvent event) {
+        if (event.sensor == magnetometer) {
+            magnetometerData = event.values.clone();
+        } else {
+            accelerometerData = event.values.clone();
+        }
+        if (accelerometerData != null && magnetometerData != null) {
+            float[] rotationMatrix = new float[9];
+            SensorManager.getRotationMatrix(rotationMatrix, null, accelerometerData, magnetometerData);
+            float[] orientation = new float[3];
+            SensorManager.getOrientation(rotationMatrix, orientation);
+            // get orientation in x dimension
+            this.rotation = (float)(Math.toDegrees(orientation[0]));
+
+            ((MainMapFragment)fragments.get(0)).updateMarkers();
+        }
+    }
+
+    @Override
+    public void onAccuracyChanged(Sensor sensor, int accuracy) {
+
     }
 
     public void displayEventView(String eventID) {
         viewedEventID = eventID;
         ((MainMapFragment)fragments.get(0)).moveCameraToEvent(eventID);
         FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+        transaction.setCustomAnimations(R.anim.enter_from_below, R.anim.shrink_and_fade_out, R.anim.grow_and_fade_in, R.anim.exit_to_below);
         transaction.replace(R.id.mainListFragmentContainer, new EventViewFragment());
-        transaction.addToBackStack(null);
+        transaction.addToBackStack("displayEvent");
         transaction.commit();
     }
 
-    public HashMap<String, Event> getEvents() {
-        return events;
-    }
+    @Override
+    public void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
 
-    public ArrayList<String> getEventNames() {
-        return eventNames;
+        // remove the old event being displayed in the main activity, since a new one is appearing
+        getSupportFragmentManager().popBackStack("displayEvent", FragmentManager.POP_BACK_STACK_INCLUSIVE);
+
+        displayEventView(intent.getStringExtra("EventID"));
     }
 
     public Location getLocation() {
@@ -121,55 +171,15 @@ public class MainActivity extends FragmentActivity implements ChildEventListener
         return viewedEventID;
     }
 
-    @Override
-    public void onChildAdded(DataSnapshot dataSnapshot, String previousChildName) {
-        Log.d("MyDebug", "EventsList: onChildAdded:" + dataSnapshot.getKey());
-
-        // add the new event to both the hashmap and its ID to the arraylist
-        Event event = dataSnapshot.getValue(Event.class);
-        events.put(dataSnapshot.getKey(), event);
-        eventNames.add(dataSnapshot.getKey());
-        // force the list to redraw itself with the new event
-        updateFragments();
-    }
-
-    @Override
-    public void onChildChanged(DataSnapshot dataSnapshot, String previousChildName) {
-        Log.d("MyDebug", "EventsList: onChildChanged:" + dataSnapshot.getKey());
-    }
-
-    @Override
-    public void onChildRemoved(DataSnapshot dataSnapshot) {
-        Log.d("MyDebug", "onChildRemoved:" + dataSnapshot.getKey());
-
-        Event event = dataSnapshot.getValue(Event.class);
-        // find the event in the events hashmap and remove it
-        events.remove(dataSnapshot.getKey());
-        // find the event's ID in the eventNames and remove it
-        for (int x = 0; x < eventNames.size(); x++) {
-            if (eventNames.get(x).equals(dataSnapshot.getKey())) {
-                eventNames.remove(x);
-            }
-        }
-        // redraw the list without the event
-        updateFragments();
-    }
-
-    @Override
-    public void onChildMoved(DataSnapshot dataSnapshot, String previousChildName) {
-        Log.d("MyDebug", "EventsList: onChildMoved:" + dataSnapshot.getKey());
-    }
-
-    @Override
-    public void onCancelled(DatabaseError databaseError) {
-        Log.w("MyDebug", "postComments:onCancelled", databaseError.toException());
+    public float getRotation() {
+        return rotation;
     }
 
     @Override
     public void onLocationChanged(Location location) {
         //Log.d("MyDebug", "location updated: " + location.getLatitude() + ", " + location.getLongitude());
         this.location = location;
-        updateFragments();
+        ((EventsApplication)getApplication()).getEventsController().setUserLocation(location);
     }
 
     @Override

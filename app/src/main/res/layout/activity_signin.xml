@@ -61,18 +61,18 @@
                     android:id="@+id/genderSelectMale"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Male"
+                    android:text="@string/male"
                     android:checked="true"/>
                 <RadioButton
                     android:id="@+id/genderSelectFemale"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Female"/>
+                    android:text="@string/female"/>
                 <RadioButton
                     android:id="@+id/genderSelectOther"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Other"/>
+                    android:text="@string/other"/>
             </RadioGroup>
 
         </TableRow>

@@ -1,6 +1,10 @@
 package com.group14.events_near_me;
 
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
+import android.support.v4.app.FragmentManager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -19,12 +23,16 @@ import com.group14.events_near_me.event_view.EventViewFragment;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
+import java.util.Iterator;
 
 public class ProfileActivity extends AppCompatActivity implements ChildEventListener {
+    // define a separate list of events for the ones that the user is going to
     private HashMap<String, Event> events = new HashMap<>();
     private ArrayList<String> eventNames = new ArrayList<>();
+    private ArrayList<SignUp> signUps = new ArrayList<>();
     private String userID;
     private ListView list;
+    private BroadcastReceiver broadcastReceiver;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -36,17 +44,19 @@ public class ProfileActivity extends AppCompatActivity implements ChildEventList
 
         // set the adapter for the list
         list = findViewById(R.id.profileEvents);
-        list.setAdapter(new EventListAdapter(this, R.layout.events_list_line, eventNames, events));
+        list.setAdapter(new EventListAdapter(this, R.layout.events_list_line, eventNames,
+                events, ((EventsApplication)getApplication()).getHandler()));
 
         // when an event is clicked get the ID of that event and pass it to the EventViewFragment
-        //TODO fix
         list.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
                 String eventID = eventNames.get(i);
-                Intent intent = new Intent(ProfileActivity.this, EventViewFragment.class);
+                Intent intent = new Intent(ProfileActivity.this, MainActivity.class);
                 intent.putExtra("EventID", eventID);
+                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                 startActivity(intent);
+                finish();
             }
         });
 
@@ -107,6 +117,15 @@ public class ProfileActivity extends AppCompatActivity implements ChildEventList
         ((EventsApplication)getApplication()).getFirebaseController()
                 .getRoot().child("signups").orderByChild("userID")
                 .equalTo(userID).addChildEventListener(this);
+
+        // add broadcast receiver
+        broadcastReceiver = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                updateEvents();
+            }
+        };
+        registerReceiver(broadcastReceiver, new IntentFilter("com.group14.events_near_me.EVENTS_UPDATE"));
     }
 
     @Override
@@ -116,35 +135,30 @@ public class ProfileActivity extends AppCompatActivity implements ChildEventList
         ((EventsApplication)getApplication()).getFirebaseController().getRoot()
                 .child("signups").orderByChild("userID")
                 .equalTo(userID).removeEventListener(this);
+
+        unregisterReceiver(broadcastReceiver);
+    }
+
+    private void updateEvents() {
+        HashMap<String, Event> eventsFull = ((EventsApplication)getApplication()).getEventsController().getEvents();
+        events.clear();
+        eventNames.clear();
+        for (SignUp signUp : signUps) {
+            events.put(signUp.eventID, eventsFull.get(signUp.eventID));
+            eventNames.add(signUp.eventID);
+        }
+
+        // notify the list that a new item has been added
+        ((EventListAdapter)list.getAdapter()).notifyDataSetChanged();
     }
 
     @Override
     public void onChildAdded(DataSnapshot dataSnapshot, String previousChildName) {
         Log.d("MyDebug", "ProfileList: onChildAdded:" + dataSnapshot.getKey());
 
-        SignUp signUp = dataSnapshot.getValue(SignUp.class);
+        signUps.add(dataSnapshot.getValue(SignUp.class));
 
-        // for the sign up create a single fire listener to get event information
-        ((EventsApplication)getApplication()).getFirebaseController()
-                .getDatabase().getReference("/events/" + signUp.eventID)
-                .addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                // add the new event to both the hashmap and its ID to the arraylist
-                Event event = dataSnapshot.getValue(Event.class);
-                events.put(dataSnapshot.getKey(), event);
-                eventNames.add(dataSnapshot.getKey());
-
-                // notify the list that a new item has been added
-
-                ((EventListAdapter)list.getAdapter()).notifyDataSetChanged();
-            }
-
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
-                Log.w("MyDebug", "ProfileList: GetEvent: onCancelled", databaseError.toException());
-            }
-        });
+        updateEvents();
     }
 
     @Override
@@ -158,36 +172,17 @@ public class ProfileActivity extends AppCompatActivity implements ChildEventList
 
         SignUp signUp = dataSnapshot.getValue(SignUp.class);
 
-        // for the signup create a single fire listener to get event information
-        ((EventsApplication)getApplication()).getFirebaseController()
-                .getDatabase().getReference("/events/" + signUp.eventID)
-                .addListenerForSingleValueEvent(new ValueEventListener() {
-                    @Override
-                    public void onDataChange(DataSnapshot dataSnapshot) {
-                        Event event = dataSnapshot.getValue(Event.class);
-                        // find the event in the events hashmap and remove it
-                        for (int x = 0; x < events.size(); x++) {
-                            if (events.get(x).equals(event)) {
-                                events.remove(x);
-                            }
-                        }
-                        // find the event's ID in the eventNames and remove it
-                        for (int x = 0; x < eventNames.size(); x++) {
-                            if (eventNames.get(x).equals(dataSnapshot.getKey())) {
-                                eventNames.remove(x);
-                            }
-                        }
+        // remove sign up from list
+        Iterator<SignUp> iterator = signUps.iterator();
+        while(iterator.hasNext()) {
+            SignUp s = iterator.next();
+            if (s.equals(signUp)) {
+                iterator.remove();
+                break;
+            }
+        }
 
-                        // notify the list that the item has been removed
-
-                        ((EventListAdapter)list.getAdapter()).notifyDataSetChanged();
-                    }
-
-                    @Override
-                    public void onCancelled(DatabaseError databaseError) {
-                        Log.w("MyDebug", "ProfileList: GetEvent: onCancelled", databaseError.toException());
-                    }
-                });
+        updateEvents();
     }
 
     @Override

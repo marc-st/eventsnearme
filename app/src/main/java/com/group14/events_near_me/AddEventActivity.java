@@ -3,6 +3,7 @@ package com.group14.events_near_me;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.CheckBox;
 import android.widget.DatePicker;
 import android.widget.TextView;
 import android.widget.TimePicker;
@@ -32,6 +33,8 @@ public class AddEventActivity extends AppCompatActivity implements View.OnClickL
             return;
         }
 
+        FirebaseController fbc = ((EventsApplication)getApplication()).getFirebaseController();
+
         // find all the views to read input from
         TextView eventNameEntry = findViewById(R.id.addEventNameEntry);
         DatePicker startDatePicker = findViewById(R.id.addEventStartDate);
@@ -43,13 +46,16 @@ public class AddEventActivity extends AppCompatActivity implements View.OnClickL
         e.name = eventNameEntry.getText().toString();
         e.lat = lat;
         e.lng = lng;
-        e.ownerID = ((EventsApplication)getApplication()).getFirebaseController().getCurrentUserId();
+        e.ownerID = fbc.getCurrentUserId();
+        e.isPrivate = ((CheckBox)findViewById(R.id.addEventPrivate)).isChecked();
 
+        // get the start time
         Calendar calendar = Calendar.getInstance();
         calendar.set(startDatePicker.getYear(), startDatePicker.getMonth(), startDatePicker.getDayOfMonth(),
                 startTimePicker.getCurrentHour(), startTimePicker.getCurrentMinute());
         e.startTime = calendar.getTimeInMillis();
 
+        // get the end time
         calendar.set(endDatePicker.getYear(), endDatePicker.getMonth(), endDatePicker.getDayOfMonth(),
                 endTimePicker.getCurrentHour(), endTimePicker.getCurrentMinute());
         e.endTime = calendar.getTimeInMillis();
@@ -60,10 +66,33 @@ public class AddEventActivity extends AppCompatActivity implements View.OnClickL
             return;
         }
 
-        String key = ((EventsApplication)getApplication()).getFirebaseController()
-                .getDatabase().getReference().child("events").push().getKey();
-        ((EventsApplication)getApplication()).getFirebaseController().getRoot().child("events").child(key).setValue(e);
+        // create the event
+        String key = fbc.getRoot().child("events").push().getKey();
+        fbc.getRoot().child("events").child(key).setValue(e);
 
+        // set the user as signed up to the event
+        if (e.isPrivate) {
+            // create an invitation
+            Invitation invitation = new Invitation();
+            invitation.userID = fbc.getCurrentUserId();
+            invitation.timestamp = Calendar.getInstance().getTimeInMillis();
+            invitation.eventID = key;
+            invitation.accepted = true;
+
+            // store it in firebase
+            String key2 = fbc.getRoot().child("invitations").push().getKey();
+            fbc.getRoot().child("invitations").child(key2).setValue(invitation);
+        } else {
+            // create a sign up
+            SignUp signUp = new SignUp();
+            signUp.userID = fbc.getCurrentUserId();
+            signUp.timestamp = Calendar.getInstance().getTimeInMillis();
+            signUp.eventID = key;
+
+            // store it in firebase
+            String key2 = fbc.getRoot().child("signups").push().getKey();
+            fbc.getRoot().child("signups").child(key2).setValue(signUp);
+        }
         finish();
     }
 }

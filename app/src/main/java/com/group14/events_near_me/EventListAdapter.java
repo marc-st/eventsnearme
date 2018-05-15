@@ -4,6 +4,8 @@ import android.app.Activity;
 import android.content.Context;
 import android.location.Address;
 import android.location.Geocoder;
+import android.os.Handler;
+import android.os.Looper;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -31,13 +33,17 @@ public class EventListAdapter extends ArrayAdapter<String> {
     private HashMap<String, Event> events;
     private ArrayList<String> eventNames;
     private int layoutResourceId;
+    private Handler handlerBackground;
+    private Handler handlerUI;
 
-    public EventListAdapter(Context context, int layoutResourceId, ArrayList<String> eventNames, HashMap<String, Event> events) {
+    public EventListAdapter(Context context, int layoutResourceId, ArrayList<String> eventNames, HashMap<String, Event> events, Handler handler) {
         super(context, layoutResourceId, eventNames);
         this.context = context;
         this.events = events;
         this.eventNames = eventNames;
         this.layoutResourceId = layoutResourceId;
+        this.handlerBackground = handler;
+        handlerUI = new Handler(Looper.myLooper());
     }
 
     @Override
@@ -52,34 +58,65 @@ public class EventListAdapter extends ArrayAdapter<String> {
         }
 
         // get the event by querying the hashmap for the ID
-        Event e = events.get(eventNames.get(position));
+        final Event e = events.get(eventNames.get(position));
 
         ((TextView)row.findViewById(R.id.eventListName)).setText(e.name);
 
         // convert the times from milliseconds into a human readable form
-        SimpleDateFormat sdf = new SimpleDateFormat("dd MMM ''YY", Locale.UK);
+        SimpleDateFormat sdf = new SimpleDateFormat("h:mm d/M/yy", Locale.UK);
 
-        // set the start time
-        Calendar calendar = Calendar.getInstance();
-        calendar.setTimeInMillis(e.startTime);
-        String s = sdf.format(calendar.getTime());
-        ((TextView)row.findViewById(R.id.eventListStartTime)).setText(s);
+        Calendar start = Calendar.getInstance();
+        start.setTimeInMillis(e.startTime);
+        Calendar end = Calendar.getInstance();
+        end.setTimeInMillis(e.endTime);
 
-        // set the end time
-        calendar.setTimeInMillis(e.endTime);
-        s = sdf.format(calendar.getTime());
-        ((TextView)row.findViewById(R.id.eventListEndTime)).setText(s);
-
-        // reverse geo lookup location from latitude and longitude coordinates
-        Geocoder geo = new Geocoder(context);
-        try {
-            List<Address> matches = geo.getFromLocation(e.lat, e.lng, 1);
-            Address address = (matches.isEmpty() ? null : matches.get(0));
-            ((TextView)row.findViewById(R.id.eventListLocation)).setText(address.getLocality());
-        } catch (IOException e1) {
-            e1.printStackTrace();
+        StringBuilder sb = new StringBuilder();
+        // if the start and end is on the same day, condense the time display
+        if (start.get(Calendar.YEAR) == end.get(Calendar.YEAR) &&
+                start.get(Calendar.MONTH) == end.get(Calendar.MONTH) &&
+                start.get(Calendar.DAY_OF_MONTH) == end.get(Calendar.DAY_OF_MONTH)) {
+            // display the start time of day only
+            SimpleDateFormat sdfTimeOnly = new SimpleDateFormat("h:mm-", Locale.UK);
+            sb.append(sdfTimeOnly.format(start.getTime()));
+            // display full date for the end only
+            sb.append(sdf.format(end.getTime()));
+        } else {
+            // display full date for both start and end
+            sb.append(sdf.format(start.getTime()));
+            sb.append(" to ");
+            sb.append(sdf.format(end.getTime()));
         }
+        ((TextView)row.findViewById(R.id.eventListTime)).setText(sb.toString());
 
+        // declare the variables as final so they can be accessed by the background task
+        final TextView eventLocation = row.findViewById(R.id.eventListLocation);
+
+        // find the name of the event location as a background task
+        handlerBackground.post(new Runnable() {
+            @Override
+            public void run() {
+                Geocoder geo = new Geocoder(getContext());
+                try {
+                    List<Address> matches = geo.getFromLocation(e.lat, e.lng, 1);
+                    final Address address = (matches.isEmpty() ? null : matches.get(0));
+
+                    handlerUI.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            eventLocation.setText(address.getLocality());
+                        }
+                    });
+                } catch (IOException | NullPointerException e1) {
+                    handlerUI.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            eventLocation.setText(getContext().getString(R.string.location_missing));
+                        }
+                    });
+                    e1.printStackTrace();
+                }
+            }
+        });
         return row;
     }
 }

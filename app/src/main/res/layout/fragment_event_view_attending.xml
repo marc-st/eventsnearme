@@ -8,7 +8,7 @@
         android:id="@+id/textDiscussion"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Attending"/>
+        android:text="@string/attending" />
 
     <ListView
         android:id="@id/android:list"

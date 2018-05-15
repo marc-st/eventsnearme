@@ -9,7 +9,7 @@ package com.group14.events_near_me;
 public class SignUp {
     public String eventID;
     public String userID;
-    private long timestamp;
+    public long timestamp;
 
     public SignUp() {
 

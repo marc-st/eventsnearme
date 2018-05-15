@@ -2,6 +2,7 @@ package com.group14.events_near_me.event_view;
 
 import android.app.AlertDialog;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.ListFragment;
 import android.util.Log;
@@ -9,6 +10,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
+import android.widget.ListView;
 
 import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
@@ -17,6 +19,7 @@ import com.google.firebase.database.DatabaseReference;
 import com.group14.events_near_me.Comment;
 import com.group14.events_near_me.EventsApplication;
 import com.group14.events_near_me.MainActivity;
+import com.group14.events_near_me.ProfileActivity;
 import com.group14.events_near_me.R;
 
 import java.util.ArrayList;
@@ -95,6 +98,14 @@ public class EventViewDiscussionFragment extends ListFragment implements ChildEv
         // create and set the contents of the comment
         Comment comment = new Comment(userID, eventID, text, timestamp);
         ref.child(key).setValue(comment);
+    }
+
+    @Override
+    public void onListItemClick(ListView l, View v, int pos, long id) {
+        Intent intent = new Intent(EventViewDiscussionFragment.this.getActivity(), ProfileActivity.class);
+        intent.putExtra("UserID", comments.get(pos).userID);
+
+        startActivity(intent);
     }
 
     @Override

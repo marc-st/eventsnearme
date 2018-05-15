@@ -53,13 +53,12 @@ public class CommentListAdapter extends ArrayAdapter<Comment> {
 
         // set comment text and body
         TextView textView = row.findViewById(R.id.discussionName);
-        textView.setText("Loading Loading");
         app.getFirebaseController().setTextViewToName(textView, comment.userID);
 
         ((TextView)row.findViewById(R.id.discussionText)).setText(comment.body);
 
         // convert time, stored in milliseconds, into a readable form
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd hh:mm", Locale.UK);
+        SimpleDateFormat sdf = new SimpleDateFormat("h:mm d/M/yy", Locale.UK);
         Calendar calendar = Calendar.getInstance();
         calendar.setTimeInMillis(comment.timestamp);
         ((TextView)row.findViewById(R.id.discussionTimestamp)).setText(sdf.format(calendar.getTime()));

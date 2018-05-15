@@ -2,6 +2,8 @@ package com.group14.events_near_me;
 
 import android.app.Application;
 import android.content.Intent;
+import android.os.Handler;
+import android.os.HandlerThread;
 
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
@@ -19,11 +21,14 @@ public class EventsApplication extends Application {
     private GoogleSignInClient googleClient;
     private FirebaseController firebase;
     private GoogleSignInAccount account;
+    private Handler handler;
+    private EventsController eventsController;
+
     @Override
     public void onCreate() {
         super.onCreate();
 
-        // create a FirebaseController
+        // create the Firebase Controller
         firebase = new FirebaseController();
         // generate what details we want from the google sign in session
         GoogleSignInOptions options = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
@@ -49,6 +54,21 @@ public class EventsApplication extends Application {
             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             startActivity(intent);
         }
+
+        HandlerThread handlerThread = new HandlerThread("backgroundTasks");
+        handlerThread.start();
+        handler = new Handler(handlerThread.getLooper());
+
+        // create the Events Controller
+        eventsController = new EventsController(this);
+    }
+
+    public EventsController getEventsController() {
+        return eventsController;
+    }
+
+    public Handler getHandler() {
+        return handler;
     }
 
     public GoogleSignInClient getClient() {

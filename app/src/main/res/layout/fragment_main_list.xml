@@ -16,30 +16,23 @@
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_weight=".25"
+            android:layout_weight=".33"
             android:textSize="20sp"
-            android:text="@string/event_name" />
+            android:text="@string/name" />
 
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_weight=".25"
+            android:layout_weight=".33"
             android:textSize="20sp"
-            android:text="@string/start" />
+            android:text="@string/time" />
 
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_weight=".25"
+            android:layout_weight=".33"
             android:textSize="20sp"
-            android:text="@string/end" />
-
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_weight=".25"
-            android:textSize="20sp"
-            android:text="@string/event_location" />
+            android:text="@string/location" />
     </LinearLayout>
 
     <ListView

@@ -10,6 +10,10 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+
+import com.group14.events_near_me.Event;
+import com.group14.events_near_me.EventsApplication;
+import com.group14.events_near_me.MainActivity;
 import com.group14.events_near_me.R;
 
 import java.util.ArrayList;
@@ -28,10 +32,19 @@ public class EventViewFragment extends Fragment {
 
         fragments = new ArrayList<>();
 
+
         // add each of the three fragments to the adapter
-        fragments.add(new EventViewDiscussionFragment());
-        fragments.add(new EventViewAttendingFragment());
         fragments.add(new EventViewSignUpFragment());
+        fragments.add(new EventViewDiscussionFragment());
+
+        // if the event's private add an invited fragment otherwise an attending fragment
+        Event event = ((EventsApplication)getActivity().getApplication())
+                .getEventsController().getEvents().get(((MainActivity)getActivity()).getViewedEventID());
+        if (event.isPrivate) {
+            fragments.add(new EventViewInvitedFragment());
+        } else {
+            fragments.add(new EventViewAttendingFragment());
+        }
     }
 
     @Override
@@ -52,6 +65,7 @@ public class EventViewFragment extends Fragment {
         };
 
         ViewPager viewPager = view.findViewById(R.id.eventViewPager);
+        viewPager.setOffscreenPageLimit(2);
         viewPager.setAdapter(fragmentPagerAdapter);
 
         return view;
@@ -68,7 +82,11 @@ public class EventViewFragment extends Fragment {
     }
 
     public void setSignedUp() {
-        ((EventViewSignUpFragment)fragments.get(2)).setSignedUp();
+        ((EventViewSignUpFragment)fragments.get(0)).setSignedUp();
+    }
+
+    public void setInvited(String invitationId, boolean accepted) {
+        ((EventViewSignUpFragment)fragments.get(0)).setInvited(invitationId, accepted);
     }
 
 }

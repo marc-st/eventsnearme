@@ -1,6 +1,9 @@
 package com.group14.events_near_me;
 
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.location.Location;
 import android.support.v4.app.Fragment;
 import android.os.Bundle;
@@ -31,8 +34,6 @@ import java.util.HashMap;
 
 public class MainMapFragment extends Fragment implements OnMapReadyCallback, GoogleMap.OnMapClickListener,
         GoogleMap.OnMarkerClickListener {
-    private HashMap<String, Event> events;
-    private ArrayList<String> eventNames;
     private GoogleMap map;
     private boolean addingEvent;
 
@@ -40,9 +41,12 @@ public class MainMapFragment extends Fragment implements OnMapReadyCallback, Goo
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        events = ((MainActivity)getActivity()).getEvents();
-        eventNames = ((MainActivity)getActivity()).getEventNames();
-
+        getActivity().registerReceiver(new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                updateMarkers();
+            }
+        }, new IntentFilter("com.group14.events_near_me.EVENTS_UPDATE"));
         addingEvent = false;
     }
 
@@ -75,6 +79,9 @@ public class MainMapFragment extends Fragment implements OnMapReadyCallback, Goo
         }
         map.clear();
 
+        ArrayList<String> eventNames = ((EventsApplication)getActivity().getApplication()).getEventsController().getEventNames();
+        HashMap<String, Event> events = ((EventsApplication)getActivity().getApplication()).getEventsController().getEvents();
+
         for (String s : eventNames) {
             Event e = events.get(s);
             MarkerOptions markerOptions = new MarkerOptions();
@@ -88,6 +95,11 @@ public class MainMapFragment extends Fragment implements OnMapReadyCallback, Goo
         markerOptions.position(new LatLng(location.getLatitude(), location.getLongitude()));
         markerOptions.title("Your location");
         markerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE));
+        try {
+            markerOptions.rotation(((MainActivity) getActivity()).getRotation());
+        } catch (NullPointerException e) {
+
+        }
         map.addMarker(markerOptions);
     }
 
@@ -96,7 +108,7 @@ public class MainMapFragment extends Fragment implements OnMapReadyCallback, Goo
             return;
         }
 
-        Event event = events.get(eventID);
+        Event event = ((EventsApplication)getActivity().getApplication()).getEventsController().getEvents().get(eventID);
         LatLng latLng = new LatLng(event.lat, event.lng);
         map.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, 12));
     }
@@ -123,12 +135,14 @@ public class MainMapFragment extends Fragment implements OnMapReadyCallback, Goo
             intent.putExtra("lat", latLng.latitude);
             intent.putExtra("lng", latLng.longitude);
             startActivity(intent);
+            addingEvent = false;
         }
     }
 
     @Override
     public boolean onMarkerClick(Marker marker) {
         // search for if the marker is an event marker, indicated by its name being stored in eventnames
+        ArrayList<String> eventNames = ((EventsApplication)getActivity().getApplication()).getEventsController().getEventNames();
         for (String s : eventNames) {
             if (marker.getTitle().equals(s)) {
                 ((MainActivity)getActivity()).displayEventView(marker.getTitle());
