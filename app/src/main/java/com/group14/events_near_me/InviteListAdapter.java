@@ -7,6 +7,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
+import android.widget.CheckBox;
 import android.widget.TextView;
 
 import java.util.ArrayList;
@@ -44,19 +45,43 @@ public class InviteListAdapter extends ArrayAdapter<String> {
             row = inflater.inflate(resourceId, parent, false);
         }
 
-        String userID = userNames.get(position);
+        final String userID = userNames.get(position);
 
         User user = users.get(userID);
-        ((TextView)row.findViewById(R.id.attendingName))
+        ((TextView)row.findViewById(R.id.invitingName))
                 .setText(user.firstName + ' ' + user.surname);
 
         // search clicked names for current user, if so change background colour
         if (!findFromList(userID, row)) {
             // if the item wasn't removed from the list, add it to the list
+            ((CheckBox)row.findViewById(R.id.invitingCheckbox)).setChecked(false);
             row.setBackgroundColor(getContext().getResources().getColor(R.color.colorNotSelected));
         }
 
+        row.findViewById(R.id.invitingCheckbox).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (!removeFromList(userID)) {
+                    // if the item wasn't removed from the list, add it to the list
+                    clickedNames.add(userID);
+                }
+            }
+        });
+
         return row;
+    }
+
+    private boolean removeFromList(String userID) {
+        // return true if the item was removed, false if not
+        Iterator<String> iterator = clickedNames.iterator();
+        while(iterator.hasNext()) {
+            String s = iterator.next();
+            if (s.equals(userID)) {
+                iterator.remove();
+                return true;
+            }
+        }
+        return false;
     }
 
     private boolean findFromList(String userID, View row) {
@@ -65,6 +90,7 @@ public class InviteListAdapter extends ArrayAdapter<String> {
         while(iterator.hasNext()) {
             String s = iterator.next();
             if (s.equals(userID)) {
+                ((CheckBox)row.findViewById(R.id.invitingCheckbox)).setChecked(true);
                 row.setBackgroundColor(getContext().getResources().getColor(R.color.colorSelected));
                 return true;
             }

@@ -5,6 +5,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.location.Address;
 import android.location.Geocoder;
+import android.net.Uri;
 import android.support.v4.app.Fragment;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -142,6 +143,14 @@ public class EventViewSignUpFragment extends Fragment{
 
                 startActivity(intent);
 
+            }
+        });
+
+        view.findViewById(R.id.eventDirections).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent intent = new Intent(android.content.Intent.ACTION_VIEW, Uri.parse("https://www.google.com/maps/dir/?api=1&destination=" + e.lat + "," + e.lng));
+                startActivity(intent);
             }
         });
 

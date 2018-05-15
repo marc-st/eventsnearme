@@ -53,13 +53,14 @@ public class EventViewDiscussionFragment extends ListFragment implements ChildEv
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_event_view_discussion, null);
 
+        final EditText commentInput = view.findViewById(R.id.discussionEntry);
         // set up the floating action button, which allows the user to add a new comment
-        view.findViewById(R.id.discussionAddFAB).setOnClickListener(new View.OnClickListener() {
+        view.findViewById(R.id.discussionConfirm).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                final EditText commentInput = new EditText(getContext());
+                submitComment(commentInput.getText().toString());
 
-                // create an alert prompting the user to enter a comment
+                /*// create an alert prompting the user to enter a comment
                 AlertDialog.Builder alert = new AlertDialog.Builder(getContext());
                 alert.setTitle("Enter comment:");
                 alert.setView(commentInput);
@@ -76,7 +77,7 @@ public class EventViewDiscussionFragment extends ListFragment implements ChildEv
                         // if they clicked cancel don't submit a comment; do nothing
                     }
                 });
-                alert.show();
+                alert.show();*/
             }
         });
         return view;
