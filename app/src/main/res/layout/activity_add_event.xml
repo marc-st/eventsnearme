@@ -6,7 +6,8 @@
     android:layout_height="match_parent"
     tools:context="com.group14.events_near_me.AddEventActivity"
     android:orientation="vertical"
-    android:gravity="center">
+    android:gravity="center"
+    android:background="@color/colorBackground">
 
     <TextView
         android:id="@+id/addEventLocation"

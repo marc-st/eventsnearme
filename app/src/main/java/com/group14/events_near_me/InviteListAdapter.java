@@ -2,7 +2,6 @@ package com.group14.events_near_me;
 
 import android.app.Activity;
 import android.content.Context;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -55,7 +54,7 @@ public class InviteListAdapter extends ArrayAdapter<String> {
         if (!findFromList(userID, row)) {
             // if the item wasn't removed from the list, add it to the list
             ((CheckBox)row.findViewById(R.id.invitingCheckbox)).setChecked(false);
-            row.setBackgroundColor(getContext().getResources().getColor(R.color.colorNotSelected));
+            row.setBackgroundColor(getContext().getResources().getColor(R.color.colorBackground));
         }
 
         row.findViewById(R.id.invitingCheckbox).setOnClickListener(new View.OnClickListener() {

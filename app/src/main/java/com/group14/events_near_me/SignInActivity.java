@@ -1,10 +1,12 @@
 package com.group14.events_near_me;
 
 import android.content.Intent;
+import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.webkit.WebView;
 import android.widget.DatePicker;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
@@ -34,18 +36,23 @@ public class SignInActivity extends AppCompatActivity implements View.OnClickLis
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_signin);
-
-        googleClient = ((EventsApplication)getApplication()).getClient();
-
-        findViewById(R.id.sign_in_button).setOnClickListener(this);
-        findViewById(R.id.confirmDetails).setOnClickListener(this);
 
         boolean isSignedIn = getIntent().getBooleanExtra("isAuthenticated", false);
         if (isSignedIn) {
             account = ((EventsApplication)getApplication()).getAccount();
             checkForExistingUser(account.getIdToken());
+
+            // set the screen to display a splash screen while the user data is retrieved
+            setContentView(R.layout.splash_screen);
+        } else {
+            setContentView(R.layout.activity_sign_in_eula);
+            WebView wv = findViewById(R.id.eulaView);
+            wv.loadUrl("file:///android_asset/EventManagerEULA.htm");
+            findViewById(R.id.eulaButton).setOnClickListener(this);
         }
+
+
+        googleClient = ((EventsApplication)getApplication()).getClient();
     }
 
     @Override
@@ -78,6 +85,13 @@ public class SignInActivity extends AppCompatActivity implements View.OnClickLis
 
                 // finish this activity bringing up the default (main)
                 finish();
+                break;
+            case R.id.eulaButton:
+                setContentView(R.layout.activity_sign_in);
+
+                findViewById(R.id.sign_in_button).setOnClickListener(this);
+                findViewById(R.id.confirmDetails).setOnClickListener(this);
+                break;
         }
     }
 
@@ -108,8 +122,13 @@ public class SignInActivity extends AppCompatActivity implements View.OnClickLis
                 .equalTo(token).addChildEventListener(this);
         listenerToken = token;
 
-        // set up account entry in case a user isn't found
-        setupDetailsEntry();
+        // after a 2 second timeout period assume an account doesnt exist and show form to make one
+        new Handler().postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                setupDetailsEntry();
+            }
+        }, 2000);
     }
 
     /**
@@ -120,6 +139,7 @@ public class SignInActivity extends AppCompatActivity implements View.OnClickLis
      * hidden and disabled
      */
     private void setupDetailsEntry() {
+        setContentView(R.layout.activity_sign_in);
         findViewById(R.id.dobSelect).setVisibility(View.VISIBLE);
         findViewById(R.id.genderSelectGroup).setVisibility(View.VISIBLE);
         findViewById(R.id.confirmDetails).setVisibility(View.VISIBLE);
