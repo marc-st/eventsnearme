@@ -34,6 +34,7 @@ public class EventViewFragment extends Fragment {
         // add each of the three fragments to the adapter
         fragments.add(new EventViewSignUpFragment());
         fragments.add(new EventViewDiscussionFragment());
+        fragments.add(new EventViewAnalyticsFragment());
 
         // if the event's private add an invited fragment otherwise an attending fragment
         Event event = ((EventsApplication)getActivity().getApplication())
