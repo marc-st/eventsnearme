@@ -34,9 +34,9 @@ public class InviteActivity extends AppCompatActivity implements ChildEventListe
         setContentView(R.layout.activity_invite);
 
         list = findViewById(R.id.inviteList);
-        list.setAdapter(new InviteListAdapter(this, R.layout.event_attending_list_line, users, userNames, clickedNames));
+        list.setAdapter(new InviteListAdapter(this, R.layout.inviting_list_line, users, userNames, clickedNames));
 
-        list.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+        /*list.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
                 String userID = userNames.get(i);
@@ -48,7 +48,7 @@ public class InviteActivity extends AppCompatActivity implements ChildEventListe
                 // redraw the list
                 ((InviteListAdapter)list.getAdapter()).notifyDataSetChanged();
             }
-        });
+        });*/
 
         // add on click listener for forename button
         findViewById(R.id.inviteForenameButton).setOnClickListener(new View.OnClickListener() {
@@ -172,7 +172,7 @@ public class InviteActivity extends AppCompatActivity implements ChildEventListe
         finish();
     }
 
-    private boolean removeFromList(String userID) {
+    /*private boolean removeFromList(String userID) {
         // return true if the item was removed, false if not
         Iterator<String> iterator = clickedNames.iterator();
         while(iterator.hasNext()) {
@@ -183,7 +183,7 @@ public class InviteActivity extends AppCompatActivity implements ChildEventListe
             }
         }
         return false;
-    }
+    }*/
 
     @Override
     public void onChildAdded(DataSnapshot dataSnapshot, String s) {

@@ -134,7 +134,7 @@ public class MainActivity extends FragmentActivity implements LocationListener, 
             // get orientation in x dimension
             this.rotation = (float)(Math.toDegrees(orientation[0]));
 
-            ((MainMapFragment)fragments.get(0)).updateMarkers();
+            // ((MainMapFragment)fragments.get(0)).updateMarkers();
         }
     }
 

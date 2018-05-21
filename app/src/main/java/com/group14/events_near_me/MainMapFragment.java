@@ -24,6 +24,7 @@ import com.google.android.gms.maps.model.MarkerOptions;
 import com.group14.events_near_me.event_view.EventViewFragment;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.HashMap;
 
 /**
@@ -87,6 +88,26 @@ public class MainMapFragment extends Fragment implements OnMapReadyCallback, Goo
             MarkerOptions markerOptions = new MarkerOptions();
             markerOptions.position(new LatLng(e.lat, e.lng));
             markerOptions.title(s);
+
+            if (e.endTime < Calendar.getInstance().getTimeInMillis()) {
+                // event is expired
+                markerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED));
+            } else if (e.isPrivate) {
+                // event is private
+                if (e.startTime < Calendar.getInstance().getTimeInMillis()) {
+                    markerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE));
+                } else {
+                    markerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE));
+                }
+            } else if (e.startTime < Calendar.getInstance().getTimeInMillis()) {
+                // event is in progress
+                markerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_YELLOW));
+            } else {
+                // event hasn't happened yet
+                markerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN));
+            }
+
+
             map.addMarker(markerOptions);
         }
 
@@ -96,7 +117,7 @@ public class MainMapFragment extends Fragment implements OnMapReadyCallback, Goo
         markerOptions.title("Your location");
         markerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE));
         try {
-            markerOptions.rotation(((MainActivity) getActivity()).getRotation());
+            markerOptions.rotation(((MainActivity) getActivity()).getRotation() + 180);
         } catch (NullPointerException e) {
 
         }
@@ -142,6 +163,7 @@ public class MainMapFragment extends Fragment implements OnMapReadyCallback, Goo
     @Override
     public boolean onMarkerClick(Marker marker) {
         // search for if the marker is an event marker, indicated by its name being stored in eventnames
+        // this check is done to ignore clicks on the user's position marker
         ArrayList<String> eventNames = ((EventsApplication)getActivity().getApplication()).getEventsController().getEventNames();
         for (String s : eventNames) {
             if (marker.getTitle().equals(s)) {

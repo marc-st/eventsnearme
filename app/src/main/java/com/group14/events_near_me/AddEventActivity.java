@@ -1,5 +1,7 @@
 package com.group14.events_near_me;
 
+import android.location.Address;
+import android.location.Geocoder;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
@@ -9,7 +11,11 @@ import android.widget.TextView;
 import android.widget.TimePicker;
 import android.widget.Toast;
 
+import org.w3c.dom.Text;
+
+import java.io.IOException;
 import java.util.Calendar;
+import java.util.List;
 
 public class AddEventActivity extends AppCompatActivity implements View.OnClickListener {
     private double lat;
@@ -22,7 +28,31 @@ public class AddEventActivity extends AppCompatActivity implements View.OnClickL
 
         lat = getIntent().getDoubleExtra("lat", 0.0d);
         lng = getIntent().getDoubleExtra("lng", 0.0d);
-        ((TextView)findViewById(R.id.addEventLocation)).setText(lat + ", " + lng);
+
+        final TextView eventLocation = findViewById(R.id.addEventLocation);
+
+        // find the name of the event location as a background task
+        ((EventsApplication)getApplication()).getHandler().post(new Runnable() {
+            @Override
+            public void run() {
+                Geocoder geo = new Geocoder(AddEventActivity.this);
+                try {
+                    List<Address> matches = geo.getFromLocation(lat, lng, 1);
+                    final Address address = (matches.isEmpty() ? null : matches.get(0));
+
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            eventLocation.setText(address.getAddressLine(0));
+                        }
+                    });
+
+                } catch (IOException | NullPointerException e1) {
+                    e1.printStackTrace();
+                }
+            }
+        });
+
         findViewById(R.id.addEventConfirm).setOnClickListener(this);
     }
 

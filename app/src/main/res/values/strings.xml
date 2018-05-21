@@ -42,6 +42,8 @@
     <string name="invite_forename">Invite by forename</string>
     <string name="invite_surname">Invite by surname</string>
     <string name="invite_search_no_term">Enter a search to begin</string>
+    <string name="directions">Get Directions</string>
+    <string name="enter_comment">Enter a comment</string>
 
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
