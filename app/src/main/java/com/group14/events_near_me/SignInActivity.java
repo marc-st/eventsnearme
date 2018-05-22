@@ -7,6 +7,7 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.webkit.WebView;
+import android.widget.Button;
 import android.widget.DatePicker;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
@@ -142,7 +143,10 @@ public class SignInActivity extends AppCompatActivity implements View.OnClickLis
         setContentView(R.layout.activity_sign_in);
         findViewById(R.id.dobSelect).setVisibility(View.VISIBLE);
         findViewById(R.id.genderSelectGroup).setVisibility(View.VISIBLE);
-        findViewById(R.id.confirmDetails).setVisibility(View.VISIBLE);
+        Button confirm = findViewById(R.id.confirmDetails);
+        confirm.setVisibility(View.VISIBLE);
+        confirm.setOnClickListener(this);
+
         findViewById(R.id.sign_in_button).setVisibility(View.GONE);
     }
 
