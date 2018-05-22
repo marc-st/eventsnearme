@@ -3,7 +3,8 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="com.group14.events_near_me.SignInActivity">
+    tools:context="com.group14.events_near_me.SignInActivity"
+    android:background="@color/colorBackground">
 
 
     <TableLayout

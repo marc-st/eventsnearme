@@ -76,9 +76,13 @@ public class EventViewSignUpFragment extends Fragment{
                     Geocoder geo = new Geocoder(getContext());
                     try {
                         List<Address> matches = geo.getFromLocation(e.lat, e.lng, 1);
-                        Address address = (matches.isEmpty() ? null : matches.get(0));
-
-                        eventLocation.setText(address.getAddressLine(0));
+                        final Address address = (matches.isEmpty() ? null : matches.get(0));
+                        EventViewSignUpFragment.this.getActivity().runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                eventLocation.setText(address.getAddressLine(0));
+                            }
+                        });
                     } catch (IOException | NullPointerException e1) {
                         eventLocation.setText(getString(R.string.location_missing));
                         e1.printStackTrace();

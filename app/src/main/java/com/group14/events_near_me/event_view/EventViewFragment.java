@@ -58,13 +58,13 @@ public class EventViewFragment extends Fragment {
 
             @Override
             public int getCount() {
-                // this will always be 3 as there are 3 fragments
-                return 3;
+                // this will always be 4 as there are 4 fragments
+                return 4;
             }
         };
 
         ViewPager viewPager = view.findViewById(R.id.eventViewPager);
-        viewPager.setOffscreenPageLimit(2);
+        viewPager.setOffscreenPageLimit(3);
         viewPager.setAdapter(fragmentPagerAdapter);
 
         return view;
