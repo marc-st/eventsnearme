@@ -159,8 +159,10 @@ public class MainActivity extends FragmentActivity implements LocationListener, 
 
         // remove the old event being displayed in the main activity, since a new one is appearing
         getSupportFragmentManager().popBackStack("displayEvent", FragmentManager.POP_BACK_STACK_INCLUSIVE);
-
-        displayEventView(intent.getStringExtra("EventID"));
+        String s = intent.getStringExtra("EventID");
+        if (s != null) {
+            displayEventView(s);
+        }
     }
 
     public Location getLocation() {
