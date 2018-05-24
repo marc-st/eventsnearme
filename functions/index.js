@@ -6,9 +6,12 @@ admin.initializeApp();
 exports.recordGender = functions.database.ref('users')
   .onCreate((snapshot, context) => {
     const gender = snapshot.child('gender').val()
-    const reference = functions.database.ref('meta')
-    if (gender === 'Male')
-      return reference.child('Male').set(reference.child('Male').val() + 1)
-    else
-      return reference.child('Female').set(reference.child('Female').val() + 1)
+    if (gender.trim() === 'Male'){
+      var male = snapshot.ref.root.child('meta/Male')
+      return male.transaction((count) => {return count+1})
+    }
+    else {
+      var female = snapshot.ref.root.child('meta/Female')
+      return female.transaction((count) => {return count+1})
+    }
 });
